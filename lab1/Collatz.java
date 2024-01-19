@@ -11,7 +11,7 @@ public class Collatz {
             return 3 * n + 1;
         } else {
             return n / 2;
-            
+
         }
     }
 
