@@ -116,7 +116,8 @@ public class Model extends Observable {
         //b.tile(col, row)
         int length = this.board.size();
         for (int col = 0; col < length; col++) {
-            boolean temp = ColumnOperator(col);
+            boolean temp = true;
+            //ColumnOperator(col);
             if (temp) {
                 changed = true;
             }
