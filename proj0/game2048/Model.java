@@ -114,13 +114,10 @@ public class Model extends Observable {
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
         //b.tile(col, row)
-        int length = this.board.size();
-        for (int col = 0; col < length; col++) {
-            boolean temp = true;
-            //ColumnOperator(col);
-            if (temp) {
+        for (int col = 0; col < this.board.size(); col++) {
+            if(colOperator(col)){
                 changed = true;
-            }
+            };
         }
         checkGameOver();
         if (changed) {
@@ -129,73 +126,95 @@ public class Model extends Observable {
         this.board.setViewingPerspective(Side.NORTH);
         return changed;
     }
-    /*
-    Takes in column number col, operates this column and returns whether
-    this column is operated.
-    */
-    public boolean ColumnOperator(int col) {
-        boolean changed = false;
-        int length = this.board.size();
 
-        int[] destination = getClose(col);
-        destination = merge(col, destination);
-        for (int row = length - 1; row >= 0 ; row--) {
-            if (this.board.tile(col, row) != null && destination[row] != 0) {
+    public boolean colOperator(int col){
+        int[] distance = new int[this.board.size()];
+        boolean changed = false;
+        distance = getDistance(col, distance);
+        for (int row = this.board.size() - 1; row >= 0 ; row--) {
+            if (distance[row] != 0 && !isNulltile(col, row)){
                 changed = true;
-                this.board.move(col, row + destination[row], this.board.tile(col, row));
+                if (isMerge(col, row + distance[row], this.board.tile(col, row))) {
+                    this.score = this.score + this.board.tile(col, row).value() * 2;
+                }
+                this.board.move(col, row + distance[row], this.board.tile(col, row));
             }
         }
         return changed;
     }
-    public int[] getClose(int col){
-        int length = this.board.size();
-        int[] destination = new int[4];
-        for (int row = length - 2; row >= 0 ; row--) {
-                if (this.board.tile(col, row + 1) == null) {
-                    destination[row] = 1 + destination[row + 1];
-                } else {
-                    destination[row] = destination[row + 1];
-                }
-            }
-        return destination;
+
+    public boolean isMerge(int target_col, int target_row, Tile tile){
+        if (!isNulltile(target_col, target_row) && this.board.tile(target_col, target_row).value() == tile.value()) {
+            return true;
+        }
+        return false;
     }
-    public int[] merge(int col, int[] destination) {
-        int length = this.board.size();
-        boolean[] ismerge = new boolean[]{false, false, false, false};
-        for (int row = length - 2; row >= 0; row--) {
-            if (this.board.tile(col, row) != null) {
-                if (isFrontEqual(col, row)
-                        && ismerge[row + 1] == false) {
-                    ismerge[row] = true;
-                    this.score = this.score + 2 * this.board.tile(col, row).value();
-                    destination[row] = destination[row] + 1;
-                }
-                int re_len = 1;
-                while(row + re_len <= length - 1){
-                    if(ismerge[row + re_len]){
-                        destination[row] = destination[row] + 1;
-                    }
-                    re_len += 1;
-                }
-                //else if (ismerge[row + 1] == true) {
-                //    destination[row] = destination[row] + 1;
-                //}
+    public boolean isNulltile(int col, int row){
+        return this.board.tile(col, row) == null;
+    }
+
+    public int[] getDistance(int col, int[] distance){
+        for (int row = this.board.size() - 1; row >= 0 ; row--) {
+            if (isNulltile(col, row)) {
+                distance[row] = 0;
+            } else {
+                distance[row] = nullMove(col, row) + mergeMove(col, row);
             }
         }
-        return destination;
+        return distance;
     }
-    public boolean isFrontEqual(int col, int row) {
-        int length = this.board.size();
-        int re_len = 1;
-        while (row + re_len <= length - 1) {
-            if (this.board.tile(col, row + re_len) != null
-                    && this.board.tile(col, row + re_len).value() == this.board.tile(col, row).value()) {
+
+    public int nullMove(int col, int row){
+        if(row == this.board.size() - 1){
+            return 0;
+        }
+        else if(isNulltile(col, row + 1)){
+            return 1 + nullMove(col, row + 1);
+        }
+        else {
+            return nullMove(col, row + 1);
+        }
+    }
+
+    public int mergeMove(int col, int row){
+        if (row == this.board.size() - 1) {
+            return 0;
+        } else if(canMerge(col, row)){
+            return 1 + mergeMove(col, row + 1);
+        }
+        return mergeMove(col, row + 1);
+    }
+
+    public boolean canMerge(int col, int row){
+        if(isNulltile(col, row)){
+            return false;
+        }
+        Object[] result = hasNextEqual(col, row);
+        if((boolean) result[0]){
+            if (!canMerge(col, row + (int) result[1])){
                 return true;
             }
-            re_len += 1;
         }
-
         return false;
+    }
+
+    public Object[] hasNextEqual(int col, int row){
+        int current_value = this.board.tile(col, row).value();
+        Object[] result = new Object[]{false, 0};
+        for (int i = 1; i <= this.board.size() - row - 1 ; i++) {
+            if (! isNulltile(col, row + i)) {
+                if (this.board.tile(col, row + i).value() == current_value) {
+                    result[0] = true;
+                    result[1] = i;
+                    break;
+                } else if (this.board.tile(col, row + i).value() != current_value) {
+                    result[0] = false;
+                    result[1] = 0;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /** Checks if the game is over and sets the gameOver variable
