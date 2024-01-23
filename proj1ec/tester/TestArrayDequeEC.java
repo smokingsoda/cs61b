@@ -23,10 +23,10 @@ public class TestArrayDequeEC {
                 student.addLast(value);
                 teacher.addLast(value);
                 errorMessageOperator(errorMessage, "addLast" + "(" + value + ")");
-            } else if (op == 2 && !teacher.isEmpty()) {
+            } else if (op == 2) {
                 errorMessageOperator(errorMessage, "removeFirst" + "()");
                 assertEquals("\n" + errorMessage[0] + "\n" + errorMessage[1] + "\n" + errorMessage[2],teacher.removeFirst(), student.removeFirst());
-            } else if (op == 3 && !teacher.isEmpty()) {
+            } else if (op == 3) {
                 errorMessageOperator(errorMessage, "removeLast" + "()");
                 assertEquals("\n" + errorMessage[0] + "\n" + errorMessage[1] + "\n" + errorMessage[2], teacher.removeLast(), student.removeLast());
             } else if (op == 4) {
