@@ -24,7 +24,7 @@ public class ArrayDeque<Item> {
         if(this.size() + 1> this.capacity()){
             this.resize(this.size() * 2);
         }
-        Item[] mid = (Item[]) new Object[8];
+        Item[] mid = (Item[]) new Object[this.capacity()];
         mid[0] = item;
         System.arraycopy(this.items, 0, mid, 1, this.size());
         this.items = mid;
@@ -32,7 +32,7 @@ public class ArrayDeque<Item> {
     }
 
     public void addLast(Item item){
-        if(this.size() + 1> this.capacity()){
+        if(this.size() + 1 > this.capacity()){
             this.resize(this.size() * 2);
         }
         this.items[this.size()] = item;
@@ -59,7 +59,7 @@ public class ArrayDeque<Item> {
             if (this.size() <= this.capacity() / 4) {
                 this.resize(this.capacity() / 4);
             }
-            Item[] mid = (Item[]) new Object[8];
+            Item[] mid = (Item[]) new Object[this.capacity()];
             System.arraycopy(this.items, 1, mid, 0, this.size() - 1);
             Item f = this.items[0];
             this.items  = mid;
