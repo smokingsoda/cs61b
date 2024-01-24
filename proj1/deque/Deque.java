@@ -21,5 +21,5 @@ public interface Deque<T>{
 
     T get(int index);
 
-    boolean euqals(Object o);
+    boolean equals(Object o);
 }

@@ -83,9 +83,12 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         if (second == this.LAST_SENTINEL) {
             this.first = this.FRONT_SENTINEL;
             this.last = this.LAST_SENTINEL;
+            this.LAST_SENTINEL.previous = this.FRONT_SENTINEL;
+            this.FRONT_SENTINEL.next = this.LAST_SENTINEL;
         } else {
             this.first = second;
             second.previous = this.FRONT_SENTINEL;
+            this.FRONT_SENTINEL.next = this.first;
         }
         f.previous = null;
         f.next = null;
@@ -103,9 +106,12 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         if (second == this.FRONT_SENTINEL) {
             this.first = this.FRONT_SENTINEL;
             this.last = this.LAST_SENTINEL;
+            this.LAST_SENTINEL.previous = this.FRONT_SENTINEL;
+            this.FRONT_SENTINEL.next = this.LAST_SENTINEL;
         } else {
             this.last = second;
             second.next = this.LAST_SENTINEL;
+            this.LAST_SENTINEL.previous = this.last;
         }
         l.previous = null;
         l.next = null;
@@ -135,7 +141,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         }
     }
 
-    public T getHelpRecursive(int index, DLLink<T> dl) {
+    private T getHelpRecursive(int index, DLLink<T> dl) {
         if (index == 0) {
             return dl.content;
         } else {
@@ -143,8 +149,8 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         }
     }
 
-    
-    public boolean euqals(Object o) {
+
+    public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
@@ -154,7 +160,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
                 return false;
             }
             for (int i = 0; i < this.size; i++) {
-                if (!(this.get(i).equals(other.get(i)))){
+                if (this.get(i) != (other.get(i))) {
                     return false;
                 };
             }
@@ -164,7 +170,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     
-    public Iterator iterator(){
+    public Iterator<T> iterator(){
         return new LinkedListDequeIterator();
     }
 

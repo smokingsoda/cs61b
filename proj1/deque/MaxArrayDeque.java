@@ -20,7 +20,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
             if (other.c != this.c) {
                 return false;
             }
-            if (!(other.max(other.c).equals(this.max(this.c)))) {
+            if (other.max(other.c) != (this.max(this.c))) {
                 return false;
             }
             return super.equals(o);
@@ -28,7 +28,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         return false;
     }
 
-    public T max(Comparator comparator) {
+    public T max(Comparator<T> comparator) {
         if (isEmpty()) {
             return null;
         }
