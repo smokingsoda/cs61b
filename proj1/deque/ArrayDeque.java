@@ -69,8 +69,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (isEmpty()) {
             return null;
         } else {
-            if (this.size() <= this.capacity() / 4 && this.size() <= 4 && capacity() / 4 >= 8) {
-                this.shrink(this.capacity() / 4);
+            if (this.size() < this.capacity() / 4 && size() > 8) {
+                this.shrink(this.capacity() / 2);
             }
                 T returnItem = this.Items[nextFirst + 1];
                 this.Items[nextFirst + 1] = null;
@@ -90,8 +90,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (isEmpty()) {
             return null;
         } else {
-            if (this.size() <= this.capacity() / 4 && this.size() <= 4 && capacity() / 4 >= 8) {
-                this.shrink(this.capacity() / 4);
+            if (this.size() < this.capacity() / 4 && this.size() > 8) {
+                this.shrink(this.capacity() / 2);
             }
             T returnItem = this.Items[nextLast - 1];
             this.Items[nextLast - 1] = null;
@@ -144,13 +144,13 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (o == this) {
             return true;
         }
-        if (o instanceof ArrayDeque) {
-            ArrayDeque other = (ArrayDeque) o;
+        if (o instanceof Deque) {
+            Deque other = (Deque) o;
             if (other.size() != this.size()) {
                 return false;
             }
             for (int i = 0; i < this.size; i++) {
-                if (this.get(i) != (other.get(i))) {
+                if (!this.get(i).equals((other.get(i)))) {
                     return false;
                 };
             }

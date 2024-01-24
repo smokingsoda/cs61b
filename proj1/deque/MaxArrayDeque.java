@@ -11,7 +11,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
     }
 
 
-    public boolean equals(Object o) {
+    /*public boolean equals(Object o) {
         if (o == this) {
             return true;
         }
@@ -26,7 +26,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
             return super.equals(o);
         }
         return false;
-    }
+    }*/
 
     public T max(Comparator<T> comparator) {
         if (isEmpty()) {
