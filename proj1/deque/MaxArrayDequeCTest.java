@@ -5,6 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.util.Comparator;
+import java.util.Iterator;
 
 public class MaxArrayDequeCTest {
     public class IntegerComparator implements Comparator<Integer>{
@@ -42,5 +43,19 @@ public class MaxArrayDequeCTest {
         b.addFirst("ewqeow");
         b.addFirst("zdsa");
         assertEquals("zdsa", (String)b.max(c));
+        }
+
+        @Test
+        public void test3() {
+        LinkedListDeque<Integer> a = new LinkedListDeque<>();
+        int N= 10000;
+            for (int i = 0; i < N; i++) {
+                a.addLast(i);
+            }
+            int actual = 0;
+            for (int i : a) {
+                assertEquals(actual, i);
+                actual += 1;
+            }
         }
     }

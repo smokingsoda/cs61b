@@ -3,11 +3,11 @@ package deque;
 import java.util.Iterator;
 
 public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
-    private T[] Ts;
+    private T[] items;
     private int size;
 
     public ArrayDeque(){
-        this.Ts =(T[]) new Object[8];
+        this.items =(T[]) new Object[8];
         this.size = 0;
     }
 
@@ -19,25 +19,25 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
     }*/
 
     public int capacity(){
-        return this.Ts.length;
+        return this.items.length;
     }
 
-    public void addFirst(T T){
+    public void addFirst(T item){
         if(this.size() + 1> this.capacity()){
             this.resize(this.size() * 2);
         }
-        T[] mid = (T[]) new Object[this.capacity()];
-        mid[0] = T;
-        System.arraycopy(this.Ts, 0, mid, 1, this.size());
-        this.Ts = mid;
+        T[] mid = (T []) new Object[this.capacity()];
+        mid[0] = item;
+        System.arraycopy(this.items, 0, mid, 1, this.size());
+        this.items = mid;
         this.size += 1;
     }
 
-    public void addLast(T T){
+    public void addLast(T item){
         if(this.size() + 1 > this.capacity()){
             this.resize(this.size() * 2);
         }
-        this.Ts[this.size()] = T;
+        this.items[this.size()] = item;
         this.size += 1;
     }
 
@@ -47,7 +47,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
         }
         else {
             for (int index = 0; index < this.size(); index++) {
-                System.out.print(this.Ts[index] + " ");
+                System.out.print(this.items[index] + " ");
             }
         }
         System.out.println();
@@ -62,9 +62,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
                 this.resize(this.capacity() / 4);
             }
             T[] mid = (T[]) new Object[this.capacity()];
-            System.arraycopy(this.Ts, 1, mid, 0, this.size() - 1);
-            T f = this.Ts[0];
-            this.Ts  = mid;
+            System.arraycopy(this.items, 1, mid, 0, this.size() - 1);
+            T f = this.items[0];
+            this.items  = mid;
             this.size -= 1;
             return f;
         }
@@ -79,8 +79,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
                 this.resize(this.capacity() / 4);
             }
 
-            T l = this.Ts[this.size() - 1];
-            this.Ts[this.size() - 1] = null;
+            T l = this.items[this.size() - 1];
+            this.items[this.size() - 1] = null;
             this.size -= 1;
             return l;
         }
@@ -91,14 +91,14 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
             return null;
         }
         else {
-            return this.Ts[index];
+            return this.items[index];
         }
     }
 
     public void resize(int newsize){
         T[] mid = (T[]) new Object[newsize];
-        System.arraycopy(this.Ts, 0, mid,0, this.size());
-        this.Ts = mid;
+        System.arraycopy(this.items, 0, mid,0, this.size());
+        this.items = mid;
     }
 
     public Iterator<T> iterator(){
@@ -118,9 +118,9 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T>{
 
         @Override
         public T next() {
-            T returnT = (T) get(poistion);
+            T returnItem = (T)get(poistion);
             poistion += 1;
-            return returnT;
+            return returnItem;
         }
     }
 }
