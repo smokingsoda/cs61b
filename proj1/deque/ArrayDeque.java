@@ -6,13 +6,13 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     private T[] items;
     private int size;
 
-    public ArrayDeque(){
+    public ArrayDeque() {
         this.items =(T[]) new Object[8];
         this.size = 0;
     }
 
     @Override
-    public int size(){
+    public int size() {
         return this.size;
     }
     /*public boolean isEmpty(){
@@ -24,8 +24,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public void addFirst(T item){
-        if(this.size() + 1> this.capacity()){
+    public void addFirst(T item) {
+        if (this.size() + 1> this.capacity()) {
             this.resize(this.size() * 2);
         }
         T[] mid = (T []) new Object[this.capacity()];
@@ -36,8 +36,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public void addLast(T item){
-        if(this.size() + 1 > this.capacity()){
+    public void addLast(T item) {
+        if (this.size() + 1 > this.capacity()) {
             this.resize(this.size() * 2);
         }
         this.items[this.size()] = item;
@@ -45,7 +45,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public void printDeque(){
+    public void printDeque() {
         if (isEmpty()) {
             System.out.println();
         }
@@ -58,8 +58,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public T removeFirst(){
-        if(isEmpty()){
+    public T removeFirst() {
+        if (isEmpty()) {
             return null;
         }
         else {
@@ -120,7 +120,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
                 return false;
             }
             for (int i = 0; i < this.size; i++) {
-                if (!(this.get(i).equals(other.get(i)))){
+                if (!(this.get(i).equals(other.get(i)))) {
                     return false;
                 };
             }
@@ -130,13 +130,13 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     @Override
-    public Iterator<T> iterator(){
+    public Iterator<T> iterator() {
         return new ArrayDequeIterator<T>();
     }
 
-    private class ArrayDequeIterator<T> implements Iterator{
+    private class ArrayDequeIterator<T> implements Iterator {
         private int poistion;
-        public ArrayDequeIterator(){
+        public ArrayDequeIterator() {
             this.poistion = 0;
         }
 

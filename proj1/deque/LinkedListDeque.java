@@ -127,19 +127,19 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         return get_result;
     }
 
-    public T getRecrusive(int index) {
+    public T getRecursive(int index) {
         if (index >= size()) {
             return null;
         } else {
-            return getHelpRecrusive(index, this.first);
+            return getHelpRecursive(index, this.first);
         }
     }
 
-    public T getHelpRecrusive(int index, DLLink<T> dl) {
+    public T getHelpRecursive(int index, DLLink<T> dl) {
         if (index == 0) {
             return dl.content;
         } else {
-            return getHelpRecrusive(index - 1, dl.next);
+            return getHelpRecursive(index - 1, dl.next);
         }
     }
 
