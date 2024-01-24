@@ -58,4 +58,17 @@ public class MaxArrayDequeCTest {
                 actual += 1;
             }
         }
+    @Test
+        public void test4() {
+        ArrayDeque<Integer> a = new ArrayDeque<>();
+        int N= 10000;
+        for (int i = 0; i < N; i++) {
+            a.addLast(i);
+        }
+        int actual = 0;
+        for (int i : a) {
+            assertEquals(actual, i);
+            actual += 1;
+        }
+    }
     }
