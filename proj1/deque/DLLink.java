@@ -1,11 +1,11 @@
 package deque;
 
-public class DLLink <Item>{
-    public Item content;
-    public DLLink<Item> previous;
-    public DLLink<Item> next;
+public class DLLink <T>{
+    public T content;
+    public DLLink<T> previous;
+    public DLLink<T> next;
 
-    public DLLink(DLLink<Item> pre, DLLink<Item> nxt, Item cont){
+    public DLLink(DLLink<T> pre, DLLink<T> nxt, T cont){
         this.content = cont;
         this.previous = pre;
         this.next = nxt;

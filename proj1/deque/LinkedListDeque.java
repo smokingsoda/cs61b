@@ -2,10 +2,10 @@ package deque;
 
 import java.util.Iterator;
 
-public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     private int size;
-    private DLLink<Item> first;
-    private DLLink<Item> last;
+    private DLLink<T> first;
+    private DLLink<T> last;
     private DLLink FRONT_SENTINEL;
     private DLLink LAST_SENTINEL;
 
@@ -24,8 +24,8 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         return (this.first == this.FRONT_SENTINEL && this.last == this.LAST_SENTINEL && this.size() == 0);
     }*/
 
-    public void addFirst(Item item) {
-        DLLink<Item> add = new DLLink<Item>(null, null, item); //add is the added DLList
+    public void addFirst(T T) {
+        DLLink<T> add = new DLLink<T>(null, null, T); //add is the added DLList
         add.previous = this.FRONT_SENTINEL;//add.previous must be the sentinel
         this.FRONT_SENTINEL.next = add;//sentinel.next must be the add
         if (isEmpty()) {
@@ -33,7 +33,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
             this.LAST_SENTINEL.previous = add;
             this.last = add;
         } else {
-            DLLink<Item> f = this.first;
+            DLLink<T> f = this.first;
             add.next = f;
             f.previous = add;
         }
@@ -41,9 +41,9 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         this.size += 1;
     }
 
-    public void addLast(Item item) {
-        //DLLink<Item> l = this.last;
-        DLLink<Item> add = new DLLink<Item>(null, null, item);
+    public void addLast(T T) {
+        //DLLink<T> l = this.last;
+        DLLink<T> add = new DLLink<T>(null, null, T);
         add.next = this.LAST_SENTINEL;
         this.LAST_SENTINEL.previous = add;
         if (isEmpty()) {
@@ -51,7 +51,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
             this.FRONT_SENTINEL.next = add;
             this.first = add;
         } else {
-            DLLink<Item> l = this.last;
+            DLLink<T> l = this.last;
             add.previous = l;
             l.next = add;
         }
@@ -71,12 +71,12 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         System.out.println();
     }
 
-    public Item removeFirst() {
+    public T removeFirst() {
         if (this.isEmpty()) {
             return null;
         }
-        DLLink<Item> f = this.first;
-        DLLink<Item> second = f.next;
+        DLLink<T> f = this.first;
+        DLLink<T> second = f.next;
         if (second == this.LAST_SENTINEL) {
             this.first = this.FRONT_SENTINEL;
             this.last = this.LAST_SENTINEL;
@@ -90,12 +90,12 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         return f.content;
     }
 
-    public Item removeLast() {
+    public T removeLast() {
         if (this.isEmpty()) {
             return null;
         }
-        DLLink<Item> l = this.last;
-        DLLink<Item> second = l.previous;
+        DLLink<T> l = this.last;
+        DLLink<T> second = l.previous;
         if (second == this.FRONT_SENTINEL) {
             this.first = this.FRONT_SENTINEL;
             this.last = this.LAST_SENTINEL;
@@ -109,12 +109,12 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         return l.content;
     }
 
-    public Item get(int index) {
+    public T get(int index) {
         if (index >= this.size()) {
             return null;
         }
-        Item get_result = null;
-        DLLink<Item> pointer = this.first;
+        T get_result = null;
+        DLLink<T> pointer = this.first;
         for (int i = 0; i <= index; i++) {
             get_result = pointer.content;
             pointer = pointer.next;
@@ -122,7 +122,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         return get_result;
     }
 
-    public Item getRecrusive(int index) {
+    public T getRecrusive(int index) {
         if (index >= size()) {
             return null;
         } else {
@@ -130,7 +130,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         }
     }
 
-    public Item getHelpRecrusive(int index, DLLink<Item> dl) {
+    public T getHelpRecrusive(int index, DLLink<T> dl) {
         if (index == 0) {
             return dl.content;
         } else {
@@ -142,7 +142,7 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         return new LinkedListDequeIterator();
     }
 
-    private class LinkedListDequeIterator<Item> implements Iterator{
+    private class LinkedListDequeIterator<T> implements Iterator{
 
         private int position;
         public LinkedListDequeIterator(){
@@ -154,10 +154,10 @@ public class LinkedListDeque<Item> implements Deque<Item>, Iterable<Item> {
         }
 
         @Override
-        public Item next() {
-            Item returnItem = (Item)get(position);
+        public T next() {
+            T returnT = (T)get(position);
             position += 1;
-            return returnItem;
+            return returnT;
         }
     }
 
