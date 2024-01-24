@@ -4,27 +4,44 @@ import java.util.Comparator;
 
 public class MaxArrayDeque<T> extends ArrayDeque<T> {
     private Comparator<T> c;
-    public MaxArrayDeque(){
-        super();
-    }
 
-    public MaxArrayDeque(Comparator<T> c){
+    public MaxArrayDeque(Comparator<T> c) {
         super();
         this.c = c;
     }
 
-    public T max(Comparator c){
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o instanceof MaxArrayDeque) {
+            MaxArrayDeque other = (MaxArrayDeque) o;
+            if (other.c != this.c) {
+                return false;
+            }
+            if (!(other.max(other.c).equals(this.max(this.c)))) {
+                return false;
+            }
+            return super.equals(o);
+        }
+        return false;
+    }
+
+    public T max(Comparator comparator) {
         if (isEmpty()) {
             return null;
         }
-        T returnT = this.get(0);
-        T next;
-        for (int i = 1; i < this.size(); i++) {
-            next = this.get(i);
-            if(c.compare(returnT, next) <= 0){
-                returnT = next;
+        int maxIndex = 0;
+        for (int i = 0; i < this.size(); i++) {
+            if (comparator.compare(get(i), get(maxIndex)) >= 0) {
+                maxIndex = i;
             }
         }
-        return returnT;
+        return get(maxIndex);
+    }
+
+    public T max() {
+        return this.max(this.c);
     }
 }
