@@ -1,6 +1,6 @@
 package deque;
 
-public class LinkedListDeque<Item> {
+public class LinkedListDeque<Item> implements Deque<Item> {
     private int size;
     private DLLink<Item> first;
     private DLLink<Item> last;
@@ -18,9 +18,9 @@ public class LinkedListDeque<Item> {
         this.size = 0;
     }
 
-    public boolean isEmpty(){
+    /*public boolean isEmpty(){
         return (this.first == this.FRONT_SENTINEL && this.last == this.LAST_SENTINEL && this.size() == 0);
-    }
+    }*/
 
     public void addFirst(Item item){
         DLLink<Item> add = new DLLink<Item>(null, null, item); //add is the added DLList

@@ -1,6 +1,6 @@
 package deque;
 
-public class ArrayDeque<Item> {
+public class ArrayDeque<Item> implements Deque<Item>{
     private Item[] items;
     private int size;
 
@@ -12,9 +12,9 @@ public class ArrayDeque<Item> {
     public int size(){
         return this.size;
     }
-    public boolean isEmpty(){
+    /*public boolean isEmpty(){
         return(this.size() == 0);
-    }
+    }*/
 
     public int capacity(){
         return this.items.length;
