@@ -10,7 +10,7 @@ public class MaxArrayDeque<T> extends ArrayDeque<T> {
         this.c = c;
     }
 
-    @Override
+
     public boolean equals(Object o) {
         if (o == this) {
             return true;

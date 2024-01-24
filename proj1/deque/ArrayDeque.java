@@ -11,7 +11,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         this.size = 0;
     }
 
-    @Override
+
     public int size() {
         return this.size;
     }
@@ -23,7 +23,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         return this.items.length;
     }
 
-    @Override
+
     public void addFirst(T item) {
         if (this.size() + 1> this.capacity()) {
             this.resize(this.size() * 2);
@@ -35,7 +35,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         this.size += 1;
     }
 
-    @Override
+
     public void addLast(T item) {
         if (this.size() + 1 > this.capacity()) {
             this.resize(this.size() * 2);
@@ -44,7 +44,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         this.size += 1;
     }
 
-    @Override
+
     public void printDeque() {
         if (isEmpty()) {
             System.out.println();
@@ -57,7 +57,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         System.out.println();
     }
 
-    @Override
+
     public T removeFirst() {
         if (isEmpty()) {
             return null;
@@ -75,7 +75,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         }
     }
 
-    @Override
+
     public T removeLast() {
         if (isEmpty()) {
             return null;
@@ -92,7 +92,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         }
     }
 
-    @Override
+
     public T get(int index) {
         if(index >= this.size()) {
             return null;
@@ -109,7 +109,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         this.items = mid;
     }
 
-    @Override
+
     public boolean euqals(Object o) {
         if (o == this) {
             return true;
@@ -129,7 +129,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         return false;
     }
 
-    @Override
+
     public Iterator<T> iterator() {
         return new ArrayDequeIterator<T>();
     }
@@ -140,12 +140,12 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
             this.poistion = 0;
         }
 
-        @Override
+
         public boolean hasNext() {
             return this.poistion < size();
         }
 
-        @Override
+
         public T next() {
             T returnItem = (T)get(poistion);
             poistion += 1;

@@ -9,21 +9,21 @@ import java.util.Iterator;
 
 public class MaxArrayDequeCTest {
     public class IntegerComparator implements Comparator<Integer> {
-        @Override
+
         public int compare(Integer a, Integer b) {
             return a - b;
         }
     }
 
     public class FakeIntegerComparator implements Comparator<Integer> {
-        @Override
+
         public int compare(Integer a, Integer b) {
             return b - a;
         }
     }
 
     public class StringAlphabetComparator implements Comparator<String> {
-        @Override
+
         public int compare(String a, String b) {
             return a.compareTo(b);
         }
