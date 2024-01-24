@@ -41,6 +41,6 @@ public class MaxArrayDequeCTest {
         b.addFirst("dsade");
         b.addFirst("ewqeow");
         b.addFirst("zdsa");
-        assertEquals("dasde", (String)b.max(c));
+        assertEquals("zdsa", (String)b.max(c));
         }
     }
