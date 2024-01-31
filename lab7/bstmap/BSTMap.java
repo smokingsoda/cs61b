@@ -7,257 +7,193 @@ import java.sql.Array;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterable<K> {
     private Node root;
-    private BSTMap left;
-    private BSTMap right;
-    private BSTMap[] branches;
     private int size;
 
     public BSTMap() {
         root = null;
-        left = null;
-        right = null;
-        branches = null;
         size = 0;
-    }
-
-    private BSTMap(K key, V value) {
-        root = new Node(key, value);
-        left = new BSTMap<K, V>();
-        right = new BSTMap<K, V>();
-        branches = new BSTMap[]{left, right};
-        size = 1;
     }
 
     @Override
     public void clear() {
         root = null;
-        left = null;
-        right = null;
-        branches = null;
         size = 0;
     }
 
-    private BSTMap[] search(BSTMap Parent, K key) {
-        BSTMap[] ChildAndParent = new BSTMap[]{null, null};
-        if (root == null) {
-            ChildAndParent[0] = this;
-            ChildAndParent[1] = null;
+    private Node put(Node parent, Node child, K key, V value) {
+        if (child == null) {
+            child = new Node(key, value, null, null, parent);
+            size += 1;
         } else {
-            int cmp = root.key.compareTo(key);
+            int cmp = child.key.compareTo(key);
             if (cmp > 0) {
-                ChildAndParent[0] = left;
-                ChildAndParent[1] = this;
+                child.left = put(child, child.left, key, value);
             } else if (cmp < 0) {
-                ChildAndParent[0] = left;
-                ChildAndParent[1] = this;
+                child.right = put(child, child.right, key, value);
             } else {
-                ChildAndParent[0] = this;
-                ChildAndParent[1] = Parent;
+                child.value = value;
             }
         }
-        return ChildAndParent;
-    }
-
-    private void setMap(BSTMap targetMap, K key, V value) {
-        targetMap.root = new Node(key, value);
-        targetMap.left = new BSTMap();
-        targetMap.right = new BSTMap();
-        targetMap.branches = new BSTMap[]{targetMap.left, targetMap.right};
-        targetMap.size += 1;
-    }
-
-    private void setMap(BSTMap targetMap, K key, V value, BSTMap left, BSTMap right) {
-        targetMap.root = new Node(key, value);
-        targetMap.left = left;
-        targetMap.right = right;
-        targetMap.branches = new BSTMap[]{targetMap.left, targetMap.right};
-        targetMap.size = 1;
+        return child;
     }
 
     @Override
     public void put(K key, V value) {
-        BSTMap targetMap[] = search(this, key);
-        if (targetMap[0].root == null) {
-            setMap(targetMap[0], key, value);
-        } else if (targetMap[0].root.key.equals(key)) {
-            targetMap[0].root.value = value;
-        } else {
-            targetMap[0].put(key, value);
-        }
-        sizeCal();
+        root = put(null, root, key, value);
     }
 
-    private void sizeCal() {
-        if (root == null) {
-            size = 0;
-            return;
+    private boolean containsKey(Node node, K key) {
+        if (node == null) {
+            return false;
         } else {
-            size = 1 + left.size() + right.size();
+            int cmp = node.key.compareTo(key);
+            if (cmp > 0) {
+                return containsKey(node.left, key);
+            } else if (cmp < 0) {
+                return containsKey(node.right, key);
+            } else {
+                return true;
+            }
         }
     }
-
     @Override
     public boolean containsKey(K key) {
-        BSTMap targetMap[] = search(this, key);
-        if (targetMap[0].root == null) {
-            return false;
-        } else if (targetMap[0].root.key.equals(key)) {
-            return true;
-        } else {
-            return targetMap[0].containsKey(key);
-        }
+        return containsKey(root, key);
     }
 
+    private V get(Node node, K key) {
+        if (node == null) {
+            return null;
+        } else {
+            int cmp = node.key.compareTo(key);
+            if (cmp > 0) {
+                return get(node.left, key);
+            } else if (cmp < 0) {
+                return get(node.right, key);
+            } else {
+                return node.value;
+            }
+        }
+    }
     @Override
     public V get(K key) {
-        BSTMap targetMap[] = search(this, key);
-        if (targetMap[0].root == null) {
-            return null;
-        } else if (targetMap[0].root.key.equals(key)) {
-            return (V) targetMap[0].root.value;
-        } else {
-            return (V) targetMap[0].get(key);
-        }
+        return get(root, key);
     }
 
     public int size() {
         return size;
     }
 
-    private int validBranches() {
-        int count = -1;
-        if (root == null) {
-            return count;
-        } else {
-            count += 1;
-        }
-        if (left.root != null) {
-            count += 1;
-        }
-        if (right.root != null) {
-            count += 1;
-        }
-        return count;
-    }
-
-    private boolean isLeaf() {
-        return validBranches() == 0;
-    }
-
-    private boolean isValid() {
-        return root != null;
-    }
-
-    private boolean hasLeftLeaf() {
-        if (isValid() && left.root != null) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean hasRightLeaf() {
-        if (isValid() && right.root != null) {
-            return true;
-        }
-        return false;
-    }
 
     @Override
     public Set<K> keySet() {
         throw new UnsupportedOperationException("Unsupport");
     }
 
-    private boolean isLeft(BSTMap Child) {
-        return left.equals(Child);
-    }
 
-    private boolean isRight(BSTMap Child) {
-        return right.equals(Child);
-    }
-
-    private BSTMap getSuccessor() {
-        if (!right.left.isValid()) {
-            return right;
-        }
-        else return right.goDeepLeft();
-    }
-
-    private BSTMap goDeepLeft() {
-        if (!left.isValid()) {
-            return this;
+    private V remove(Node node, K key) {
+        if (node == null) {
+            return null;
         } else {
-            return left.goDeepLeft();
+            int cmp = node.key.compareTo(key);
+            {
+                if (cmp > 0) {
+                    return remove(node.left, key);
+                } else if (cmp < 0) {
+                    return remove(node.right, key);
+                } else {
+                    size -= 1;
+                    return removeThisNode(node);
+                }
+            }
         }
     }
 
-    private void exchangeNode(BSTMap otherMap) {
-        K midKey = (K) otherMap.root.key;
-        V midValue = (V) otherMap.root.value;
-        otherMap.root.key = root.key;
-        otherMap.root.value = root.value;
-        root.key = midKey;
-        root.value = midValue;
-    }
-
-    private void resize() {
-        if (!isValid()) {
-            size = 0;
+    private V removeThisNode(Node node) {
+        V returnValue = node.value;
+        int children = node.children();
+        if (children == 0) {
+            remove0Children(node);
+        } else if (children == 1) {
+            remove1Children(node);
         } else {
-            left.resize();
-            right.resize();
-            size = 1 + left.size() + right.size();
+            remove3Children(node);
+        }
+        return returnValue;
+    }
+    private void remove0Children(Node node) {
+        Node parentNode = node.parent;
+        if (parentNode == null) {
+            root = null;
+            return;
+        }
+        int cmp = parentNode.whichSide(node);
+        if (cmp < 0) {
+            parentNode.left = null;
+        }
+        else if (cmp > 0) {
+            parentNode.right = null;
+        } else {
+            throw new UnsupportedOperationException("Wrong!");
         }
     }
 
-    private void removeHelper(BSTMap parent, BSTMap child, K key) {
-        if (!hasLeftLeaf() && !hasRightLeaf()) {
-            child.clear();
-        } else if (!hasLeftLeaf() && hasRightLeaf()) {
-            if (parent == null) {
-                setMap(child, (K)child.right.root.key, (V)child.right.root.value, child.right.left, child.right.right);
-            }
-            else if (parent.isLeft(child)) {
-                parent.left = child.right;
-            } else {
-                parent.right = child.right;
-            }
-        } else if (hasLeftLeaf() && !hasRightLeaf()) {
-            if (parent == null) {
-                setMap(child, (K)child.left.root.key, (V)child.left.root.value, child.left.left, child.left.right);
-                child.size -= 1;
-            }
-            else if (parent.isLeft(child)) {
-                parent.left = child.left;
-            } else {
-                parent.right = child.left;
-            }
-        } else {
-            BSTMap successor = child.getSuccessor();
-            BSTMap successorParent = child.search(child, key)[1];
-            child.exchangeNode(successor);
-            successor.removeHelper(successorParent, successor, key);
+    private void remove1Children(Node node) {
+        Node parentNode = node.parent;
+        Node childOfNode = node.getTheOnlyChild();
+        if (parentNode == null) {
+            root = childOfNode;
+            root.parent = null;
+            return;
         }
+        int cmp = parentNode.whichSide(node);
+        if (cmp < 0) {
+            parentNode.left = childOfNode;
+            childOfNode.parent = parentNode;
+        } else if (cmp > 0) {
+            parentNode.right = childOfNode;
+            childOfNode.parent = parentNode;
+        } else {
+            throw new UnsupportedOperationException("Trying to remove a child which doesn't belong to its parent!");
+        }
+    }
+
+    private void remove3Children(Node node) {
+        Node successor = getSuccessor(node);
+        exchangeNode(node, successor);
+        removeThisNode(successor);
+    }
+
+    private Node getSuccessor(Node node) {
+        if (node.right == null) {
+            throw new UnsupportedOperationException("Trying to get a wrong successor!");
+        } else {
+            return goDeepLeft(node.right);
+        }
+    }
+
+    private Node goDeepLeft(Node node) {
+        if (node.left == null) {
+            return node;
+        } else {
+            return goDeepLeft(node.left);
+        }
+    }
+    private void exchangeNode(Node O1, Node O2) {
+        K midKey = O1.key;
+        V midValue = O1.value;
+        O1.key = O2.key;
+        O1.value = O2.value;
+        O2.key = midKey;
+        O2.value = midValue;
     }
     @Override
     public V remove(K key) {
-        BSTMap[] targetMap = search(null, key);
-        if (targetMap[0].root == null) {
-            return null;
-        }
-        else if (targetMap[0].root.key.equals(key)) {
-            V returnValue = (V) targetMap[0].root.value;
-            removeHelper(targetMap[1], targetMap[0], key);
-            sizeCal();
-            return returnValue;
-        }
-        else {
-            V returnValue = (V) targetMap[0].remove(key);
-            sizeCal();
-            return returnValue;
-        }
+        return remove(root, key);
     }
 
     @Override
@@ -279,10 +215,56 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
     private class Node {
         public K key;
         public V value;
+        public Node left, right, parent;
 
-        public Node(K k, V v) {
+        public Node() {
+            key = null;
+            value = null;
+            left = null;
+            right = null;
+            parent = null;
+        }
+
+        public Node(K k, V v,Node l, Node r, Node p) {
             key = k;
             value = v;
+            left = l;
+            right = r;
+            parent = p;
         }
+
+        public int children() {
+            int count = 0;
+            if (left != null) {
+                count += 1;
+            } if (right != null) {
+                count += 1;
+            }
+            return count;
+        }
+
+        //Return 0 if is not children; return negative number if is left; return positive number if is right.
+        public int whichSide(Node node) {
+            int cmp = 0;
+            if (left != null && left.equals(node)) {
+                cmp -= 1;
+            } if (right != null && right.equals(node)) {
+                cmp += 1;
+            }
+            return cmp;
+        }
+
+        public Node getTheOnlyChild() {
+            if (children() != 1){
+                throw new UnsupportedOperationException("Try to get the not only child");
+            } else {
+                if (left != null) {
+                    return left;
+                } else {
+                    return right;
+                }
+            }
+        }
+
     }
 }
