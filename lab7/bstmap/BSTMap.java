@@ -18,10 +18,69 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
         size = 0;
     }
 
+    public int size() {
+        return size;
+    }
+
     @Override
     public void clear() {
         root = null;
         size = 0;
+    }
+
+    @Override
+    public V remove(K key) {
+        return remove(root, key);
+    }
+
+    @Override
+    public void put(K key, V value) {
+        root = put(null, root, key, value);
+    }
+
+    @Override
+    public boolean containsKey(K key) {
+        return containsKey(root, key);
+    }
+
+    @Override
+    public V get(K key) {
+        return get(root, key);
+    }
+
+    @Override
+    public V remove(K key, V value) {
+        V existValue = get(key);
+        if (existValue.equals(value)){
+            remove(key);
+            return existValue;
+        }
+        else {
+            return null;
+        }
+    }
+
+    @Override
+    public Iterator<K> iterator() {
+        throw new UnsupportedOperationException("Unsupport");
+    }
+
+    @Override
+    public Set<K> keySet() {
+        throw new UnsupportedOperationException("Unsupport");
+    }
+
+    @Override
+    public String toString() {
+        String returnString = toString(root);
+        if (size() > 0) {
+            returnString = returnString.substring(0, returnString.length() - 2);
+            return "{" + returnString + "}";
+        }
+        else {
+            return "{}";
+        }
+
     }
 
     private Node put(Node parent, Node child, K key, V value) {
@@ -41,9 +100,19 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
         return child;
     }
 
-    @Override
-    public void put(K key, V value) {
-        root = put(null, root, key, value);
+    private V get(Node node, K key) {
+        if (node == null) {
+            return null;
+        } else {
+            int cmp = node.key.compareTo(key);
+            if (cmp > 0) {
+                return get(node.left, key);
+            } else if (cmp < 0) {
+                return get(node.right, key);
+            } else {
+                return node.value;
+            }
+        }
     }
 
     private boolean containsKey(Node node, K key) {
@@ -60,40 +129,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
             }
         }
     }
-    @Override
-    public boolean containsKey(K key) {
-        return containsKey(root, key);
-    }
-
-    private V get(Node node, K key) {
-        if (node == null) {
-            return null;
-        } else {
-            int cmp = node.key.compareTo(key);
-            if (cmp > 0) {
-                return get(node.left, key);
-            } else if (cmp < 0) {
-                return get(node.right, key);
-            } else {
-                return node.value;
-            }
-        }
-    }
-    @Override
-    public V get(K key) {
-        return get(root, key);
-    }
-
-    public int size() {
-        return size;
-    }
-
-
-    @Override
-    public Set<K> keySet() {
-        throw new UnsupportedOperationException("Unsupport");
-    }
-
 
     private V remove(Node node, K key) {
         if (node == null) {
@@ -125,6 +160,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
         }
         return returnValue;
     }
+
     private void remove0Children(Node node) {
         Node parentNode = node.parent;
         if (parentNode == null) {
@@ -183,6 +219,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
             return goDeepLeft(node.left);
         }
     }
+
     private void exchangeNode(Node O1, Node O2) {
         K midKey = O1.key;
         V midValue = O1.value;
@@ -190,26 +227,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
         O1.value = O2.value;
         O2.key = midKey;
         O2.value = midValue;
-    }
-    @Override
-    public V remove(K key) {
-        return remove(root, key);
-    }
-    @Override
-    public V remove(K key, V value) {
-        V existValue = get(key);
-        if (existValue.equals(value)){
-            remove(key);
-            return existValue;
-        }
-        else {
-            return null;
-        }
-    }
-
-    @Override
-    public Iterator<K> iterator() {
-        throw new UnsupportedOperationException("Unsupport");
     }
 
     public void printInOrder() {
@@ -227,21 +244,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
             return retrunString;
         }
     }
-    @Override
-    public String toString() {
-        String returnString = toString(root);
-        if (size() > 0) {
-            returnString = returnString.substring(0, returnString.length() - 2);
-            return "{" + returnString + "}";
-        }
-        else {
-            return "{}";
-        }
-
-    }
-
 
     private class Node {
+
         public K key;
         public V value;
         public Node left, right, parent;
