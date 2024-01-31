@@ -195,10 +195,16 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
     public V remove(K key) {
         return remove(root, key);
     }
-
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException("Unsupport");
+        V existValue = get(key);
+        if (existValue.equals(value)){
+            remove(key);
+            return existValue;
+        }
+        else {
+            return null;
+        }
     }
 
     @Override
@@ -206,9 +212,32 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
         throw new UnsupportedOperationException("Unsupport");
     }
 
-
     public void printInOrder() {
-        throw new UnsupportedOperationException("Unsupport");
+        System.out.println(toString());
+    }
+
+    private String toString(Node node) {
+        if (node == null) {
+            return "";
+        } else {
+            String retrunString = "";
+            retrunString = retrunString + toString(node.left);
+            retrunString = retrunString + node.toString() + ", ";
+            retrunString = retrunString + toString(node.right);
+            return retrunString;
+        }
+    }
+    @Override
+    public String toString() {
+        String returnString = toString(root);
+        if (size() > 0) {
+            returnString = returnString.substring(0, returnString.length() - 2);
+            return "{" + returnString + "}";
+        }
+        else {
+            return "{}";
+        }
+
     }
 
 
@@ -266,5 +295,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
             }
         }
 
+        @Override
+        public String toString() {
+            return  key + "=" + value;
+        }
     }
 }

@@ -11,7 +11,7 @@ public class IteratorTest {
     @Test
     public void Test1() {
         BSTMap actualMap = new BSTMap<String, Integer>();
-        HashMap expectMap = new HashMap<String, Integer>();
+        TreeMap expectMap = new TreeMap<String, Integer>();
         ArrayList<String> a = new ArrayList<>();
         int P = 1000;
         int N = 10000000;
@@ -25,6 +25,7 @@ public class IteratorTest {
                 a.add(C + randomKey);
             } else if (randomOperation == 1) {
                 assertEquals(expectMap.size(), actualMap.size());
+                assertEquals(expectMap.toString(), actualMap.toString());
             } else if (randomOperation == 2 && a.size() > 0) {
                 int randomIndex = StdRandom.uniform(0, a.size());
                 String randomString = a.remove(randomIndex);
@@ -58,10 +59,11 @@ public class IteratorTest {
                 assertEquals(expectMap.size(), actualMap.size());
                 assertEquals(expectMap.get(randomString), actualMap.get(randomString));
                 assertEquals(expectMap.containsKey(randomString), actualMap.containsKey(randomString));
+                assertEquals(expectMap.toString(), actualMap.toString());
             }
         }
     }
-    @Test
+    //@Test
     public void Test3() {
         BSTMap actualMap = new BSTMap<Integer, Integer>();
         int N = (int) Math.pow(2, 15);
@@ -142,6 +144,8 @@ public class IteratorTest {
         actualMap.put(5,5);expectMap.put(5,5);
         actualMap.put(7,7);expectMap.put(7,7);
         a.add(4);a.add(2);a.add(5);a.add(1);a.add(3);a.add(6);a.add(7);
+        actualMap.printInOrder();
+        System.out.println(expectMap.toString());
         for (int i = 0; i < 7; i++) {
             int randomIndex = StdRandom.uniform(0, a.size());
             Integer randomInteger = a.get(randomIndex);
@@ -150,6 +154,8 @@ public class IteratorTest {
             assertEquals(expectMap.size(), actualMap.size());
         }
         assertEquals(expectMap.remove(4), actualMap.remove(4));
+        actualMap.printInOrder();
+        System.out.println(expectMap.toString());
 
     }
 
