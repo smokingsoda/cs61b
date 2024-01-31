@@ -7,14 +7,14 @@ import static org.junit.Assert.*;
 
 import java.util.*;
 
-public class IteratorTest {
-    //@Test
+public class MyTest {
+    @Test
     public void Test1() {
         BSTMap actualMap = new BSTMap<String, Integer>();
         TreeMap expectMap = new TreeMap<String, Integer>();
         ArrayList<String> a = new ArrayList<>();
-        int P = 1000;
-        int N = 10000000;
+        int P = 100000;
+        int N = 100000;
         for (int i = 0; i < N; i++) {
             int randomOperation = StdRandom.uniform(0, 4);
             if (randomOperation == 0) {
@@ -38,7 +38,7 @@ public class IteratorTest {
         }
     }
 
-    //@Test
+    @Test
     public void Test2() {
         BSTMap actualMap = new BSTMap<String, Integer>();
         TreeMap expectMap = new TreeMap<String, Integer>();
@@ -65,14 +65,14 @@ public class IteratorTest {
         }
     }
 
-    //@Test
+    @Test
     public void Test3() {
         BSTMap actualMap = new BSTMap<Integer, Integer>();
         int N = (int) Math.pow(2, 15);
         int P = 32768;
         Stopwatch sw1 = new Stopwatch();
         for (int i = 0; i < N; i++) {
-            int C = StdRandom.uniform(1, P);
+            int C = StdRandom.uniform(-P, P);
             actualMap.put(C, C);
         }
         double timeInSecond1 = sw1.elapsedTime();
@@ -133,7 +133,7 @@ public class IteratorTest {
         System.out.println("N = " + N + ", Time = " + timeInSecond7);
     }
 
-    //@Test
+    @Test
     public void test4() {
         BSTMap actualMap = new BSTMap<Integer, Integer>();
         TreeMap expectMap = new TreeMap<Integer, Integer>();
