@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 public class IteratorTest {
-    @Test
+    //@Test
     public void Test1() {
         BSTMap actualMap = new BSTMap<String, Integer>();
         TreeMap expectMap = new TreeMap<String, Integer>();
@@ -37,7 +37,8 @@ public class IteratorTest {
             }
         }
     }
-    @Test
+
+    //@Test
     public void Test2() {
         BSTMap actualMap = new BSTMap<String, Integer>();
         TreeMap expectMap = new TreeMap<String, Integer>();
@@ -63,6 +64,7 @@ public class IteratorTest {
             }
         }
     }
+
     //@Test
     public void Test3() {
         BSTMap actualMap = new BSTMap<Integer, Integer>();
@@ -131,7 +133,7 @@ public class IteratorTest {
         System.out.println("N = " + N + ", Time = " + timeInSecond7);
     }
 
-    @Test
+    //@Test
     public void test4() {
         BSTMap actualMap = new BSTMap<Integer, Integer>();
         TreeMap expectMap = new TreeMap<Integer, Integer>();
@@ -157,6 +159,38 @@ public class IteratorTest {
         actualMap.printInOrder();
         System.out.println(expectMap.toString());
 
+    }
+
+    @Test
+    public void test5() {
+        BSTMap actualMap = new BSTMap<Integer, Integer>();
+        TreeMap expectMap = new TreeMap<Integer, Integer>();
+        ArrayList<Integer> a = new ArrayList<>();
+        int N = 10000;
+        int P = 10000;
+        for (int i = 0; i < N; i++) {
+            int randomInt = StdRandom.uniform(-P, P);
+            actualMap.put(randomInt,randomInt);
+            expectMap.put(randomInt,randomInt);
+        }
+        Iterator actualIterator = actualMap.iterator();
+        Iterator expectIterator = expectMap.keySet().iterator();
+        for (int i = 0; i < actualMap.size(); i++) {
+            Object p = expectIterator.next(); Object q = actualIterator.next();
+            System.out.println(p + ", " + q);
+            assertEquals(p, q);
+            assertEquals(expectIterator.hasNext(), actualIterator.hasNext());
+        }
+
+        Iterator NEWactualIterator = actualMap.iterator();
+        Iterator NEWexpectIterator = expectMap.keySet().iterator();
+        for (int i = 0; i < actualMap.size(); i++) {
+            Object p = NEWexpectIterator.next(); Object q = NEWactualIterator.next();
+            System.out.println(p + ", " + q);
+            assertEquals(p, q);
+            assertEquals(NEWexpectIterator.hasNext(), NEWactualIterator.hasNext());
+        }
+        assertTrue(expectMap.keySet().containsAll(actualMap.keySet()));
     }
 
 }

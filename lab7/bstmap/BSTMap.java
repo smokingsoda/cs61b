@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterable<K> {
+public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private Node root;
     private int size;
 
@@ -62,12 +62,16 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
 
     @Override
     public Iterator<K> iterator() {
-        throw new UnsupportedOperationException("Unsupport");
+        return new BSTMapIterator();
     }
 
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException("Unsupport");
+        HashSet<K> newSet = new HashSet();
+        for (K key : this) {
+            newSet.add(key);
+        }
+        return newSet;
     }
 
     @Override
@@ -213,6 +217,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
     }
 
     private Node goDeepLeft(Node node) {
+        if (node == null) {
+            return null;
+        }
         if (node.left == null) {
             return node;
         } else {
@@ -245,11 +252,84 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
         }
     }
 
+    private class BSTMapIterator implements Iterator {
+
+        Node position;
+
+        int count;
+
+        public BSTMapIterator() {
+            setIterable();
+            if (root == null) {
+                position = null;
+            } else if (root != null) {
+                position = getPosition(root);
+            }
+            count = 0;
+        }
+
+        private void setIterable(Node node) {
+            if (node == null) {
+                return;
+            } else {
+                node.iterated = false;
+                setIterable(node.left);
+                setIterable(node.right);
+            }
+        }
+
+        private void setIterable() {
+            setIterable(root);
+        }
+
+        private Node getPosition(Node node) {
+            if (node.children() == 0 && node.iterated == false) {
+                return node;
+            } else if (node.left != null && node.left.iterated == false) {
+                return getPosition(node.left);
+            } else if (node.iterated == false) {
+                return node;
+            } else if (node.right != null && node.right.iterated == false) {
+                return getPosition(node.right);
+            } else {
+                return getUnIteratedParent(node);
+            }
+        }
+
+            private Node getUnIteratedParent (Node node){
+                if (node.equals(root)) {
+                    return root;
+                }
+                else if (node.parent.iterated == false) {
+                    return node.parent;
+                } else {
+                    return getUnIteratedParent(node.parent);
+                }
+            }
+
+            @Override
+            public boolean hasNext () {
+                return count < size();
+            }
+
+            @Override
+            public K next () {
+                K returnKey = position.key;
+                position.iterated = true;
+                //Node midPosition = position;
+                position = getPosition(position);
+                //midPosition.iterated = true;
+                count += 1;
+                return returnKey;
+            }
+        }
+
     private class Node {
 
         public K key;
         public V value;
         public Node left, right, parent;
+        public boolean iterated;
 
         public Node() {
             key = null;
@@ -265,6 +345,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>, Iterabl
             left = l;
             right = r;
             parent = p;
+            iterated = false;
         }
 
         public int children() {
