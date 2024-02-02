@@ -193,4 +193,14 @@ public class MyTest {
         assertTrue(expectMap.keySet().containsAll(actualMap.keySet()));
     }
 
+    @Test
+    public void test6() {
+        BSTMap actualMap = new BSTMap<Integer, Integer>();
+        TreeMap expectMap = new TreeMap<Integer, Integer>();
+        Iterator actualIterator = actualMap.iterator();
+        Iterator expectIterator = expectMap.keySet().iterator();
+        assertEquals(expectIterator.hasNext(), actualIterator.hasNext());
+        assertFalse(actualIterator.hasNext());
+    }
+
 }
