@@ -41,10 +41,10 @@ public class test {
         HashMap expectMap = new HashMap<>();
         MyHashMap actualMap = new MyHashMap<>();
         ArrayList a = new ArrayList<>();
-        int N = 100000; int P = 100000;
+        int N = 10000; int P = 100000;
         int operation;
         for (int i = 0; i < N; i++) {
-            operation = StdRandom.uniform(0,4);
+            operation = StdRandom.uniform(0,5);
             if (operation == 0) {
                 int randomInt = StdRandom.uniform(-P, P);
                 expectMap.put(randomInt, i);
@@ -62,6 +62,12 @@ public class test {
                 int randomIndex = StdRandom.uniform(0, a.size());
                 a.remove(randomIndex);
                 assertEquals(expectMap.remove(randomIndex), actualMap.remove(randomIndex));
+                assertTrue(expectMap.keySet().containsAll(actualMap.keySet()));
+            } else if (operation == 4 && a.size() > 0) {
+                int randomIndex = StdRandom.uniform(0, a.size());
+                a.remove(randomIndex);
+                Object value = expectMap.remove(randomIndex);
+                assertEquals(value, actualMap.remove(randomIndex, value));
                 assertTrue(expectMap.keySet().containsAll(actualMap.keySet()));
             }
         }

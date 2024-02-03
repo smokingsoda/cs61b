@@ -242,8 +242,8 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     private V remove(K key, Collection[] buckets) {
         int removeIndex = bucketIndex(key.hashCode(), buckets.length);
         Collection targetBucket = buckets[removeIndex];
-        if (containsKey(key)) {
-            Node returnNode = getNode(key, buckets);
+        Node returnNode = getNode(key, buckets);
+        if (returnNode != null) {
             if (targetBucket.remove(returnNode)) {
                 size -= 1;
                 if (targetBucket.size() == 0) {
@@ -259,9 +259,24 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return remove(key, buckets);
     }
 
+    private V remove(K key, V value, Collection[] buckets) {
+        int removeIndex = bucketIndex(key.hashCode(), buckets.length);
+        Collection targetBucket = buckets[removeIndex];
+        Node returnNode = getNode(key, buckets);
+        if (returnNode != null && returnNode.value.equals(value)) {
+            if (targetBucket.remove(returnNode)) {
+                size -= 1;
+                if (targetBucket.size() == 0) {
+                    buckets[removeIndex] = null; //Note !!! Can't leave any empty Collection!
+                }
+                return returnNode.value;
+            }
+        }
+        return null;
+    }
     @Override
     public V remove(K key, V value) {
-        return null;
+        return remove(key, value, buckets);
     }
 
     @Override
