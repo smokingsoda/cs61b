@@ -171,14 +171,17 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return get(key, this.buckets);
     }
 
-    private void resize(Collection[] buckets) {
-        Collection[] newBuckets = createTable(buckets.length * 2);
-        MyHashMapIterator nodeIterator = new MyHashMapIterator();
-        while (nodeIterator.hasNext()) {
-            Node putNode = nodeIterator.nextNode();
-            putNewBucket(putNode.key, putNode.value, newBuckets);
+    private Collection[] resize(Collection[] buckets) {
+        if ((size) / buckets.length >= loadFactor) {
+            Collection[] newBuckets = createTable(buckets.length * 2);
+            MyHashMapIterator nodeIterator = new MyHashMapIterator();
+            while (nodeIterator.hasNext()) {
+                Node putNode = nodeIterator.nextNode();
+                putNewBucket(putNode.key, putNode.value, newBuckets);
+            }
+            buckets = newBuckets;
         }
-        this.buckets = newBuckets;
+        return buckets;
     }
 
     private void putNewBucket(K key, V value, Collection[] buckets) {
@@ -206,6 +209,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     @Override
     public void put(K key, V value) {
         put(key, value, this.buckets);
+        this.buckets = resize(buckets);
     }
 
     private void put(K key, V value, Collection[] buckets) {
@@ -229,9 +233,6 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
             targetMap.add(newNode);
         }
         size += 1;
-        if ((size) / buckets.length >= loadFactor) {
-            resize(this.buckets);
-        }
     }
 
     private int bucketIndex(int HashCode, int tableSize) {
