@@ -35,8 +35,6 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     private int size;
 
-    private int tableSize = initialSize;
-
     /* Instance Variables */
     private Collection<Node>[] buckets;
     // You should probably define some more!
@@ -106,7 +104,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      * @param tableSize the size of the table to create
      */
     private Collection<Node>[] createTable(int tableSize) {
-        return new Collection[initialSize];
+        return new Collection[tableSize];
     }
 
     // TODO: Implement the methods of the Map61B Interface below
@@ -118,9 +116,8 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         size = 0;
     }
 
-    @Override
-    public boolean containsKey(K key) {
-        int index = bucketIndex(key.hashCode());
+    private boolean containsKey(K key, Collection[] buckets) {
+        int index = bucketIndex(key.hashCode(), buckets.length);
         Collection targetMap = buckets[index];
         if (targetMap == null) {
             return false;
@@ -135,15 +132,26 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         }
         return false;
     }
+    @Override
+    public boolean containsKey(K key) {
+        return containsKey(key, this.buckets);
+    }
 
     @Override
     public int size() {
         return size;
     }
 
-    @Override
-    public V get(K key) {
-        int index = bucketIndex(key.hashCode());
+    private V get(K key, Collection[] buckets) {
+        Node targetNode = getNode(key, buckets);
+        if (targetNode == null) {
+            return null;
+        } else {
+            return targetNode.value;
+        }
+    }
+    private Node getNode(K key, Collection[] buckets) {
+        int index = bucketIndex(key.hashCode(), buckets.length);
         Collection targetMap = buckets[index];
         if (targetMap == null) {
             return null;
@@ -153,21 +161,33 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         while (newIterator.hasNext()) {
             element = (Node)newIterator.next();
             if (key.equals(element.key)) {
-                return element.value;
+                return element;
             }
         }
         return null;
     }
-
     @Override
-    public void put(K key, V value) {
-        int index = bucketIndex(key.hashCode());
+    public V get(K key) {
+        return get(key, this.buckets);
+    }
+
+    private void resize(Collection[] buckets) {
+        Collection[] newBuckets = createTable(buckets.length * 2);
+        MyHashMapIterator nodeIterator = new MyHashMapIterator();
+        while (nodeIterator.hasNext()) {
+            Node putNode = nodeIterator.nextNode();
+            putNewBucket(putNode.key, putNode.value, newBuckets);
+        }
+        this.buckets = newBuckets;
+    }
+
+    private void putNewBucket(K key, V value, Collection[] buckets) {
+        int index = bucketIndex(key.hashCode(), buckets.length);
         Collection targetMap = buckets[index];
         if (targetMap == null) {
             buckets[index] = createBucket();
             Node newNode = createNode(key, value);
             buckets[index].add(newNode);
-            size += 1;
             return;
         }
         Iterator newIterator = targetMap.iterator();
@@ -181,16 +201,60 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         }
         Node newNode = createNode(key, value);
         targetMap.add(newNode);
-        size += 1;
-    }
-
-    private int bucketIndex(int HashCode) {
-        return Math.floorMod(HashCode, tableSize);
     }
 
     @Override
-    public V remove(K key) {
+    public void put(K key, V value) {
+        put(key, value, this.buckets);
+    }
+
+    private void put(K key, V value, Collection[] buckets) {
+        int index = bucketIndex(key.hashCode(), buckets.length);
+        Collection targetMap = buckets[index];
+        if (targetMap == null) {
+            buckets[index] = createBucket();
+            Node newNode = createNode(key, value);
+            buckets[index].add(newNode);
+            size += 1;
+        } else {
+            Iterator newIterator = targetMap.iterator();
+            Node element;
+            while (newIterator.hasNext()) {
+                element = (Node) newIterator.next();
+                if (key.equals(element.key)) {
+                    element.value = value;
+                    return;
+                }
+            }
+            Node newNode = createNode(key, value);
+            targetMap.add(newNode);
+            size += 1;
+        }
+        if (size / buckets.length >= loadFactor) {
+            resize(this.buckets);
+        }
+    }
+
+    private int bucketIndex(int HashCode, int tableSize) {
+        return Math.floorMod(HashCode, tableSize);
+    }
+
+    private V remove(K key, Collection[] buckets) {
+        int removeIndex = bucketIndex(key.hashCode(), buckets.length);
+        Collection targetBucket = buckets[removeIndex];
+        Node returnNode = null;
+        if (containsKey(key)) {
+            returnNode = getNode(key, buckets);
+            if (targetBucket.remove(returnNode)) {
+                size -= 1;
+                return returnNode.value;
+            }
+        }
         return null;
+    }
+    @Override
+    public V remove(K key) {
+        return remove(key, buckets);
     }
 
     @Override
@@ -200,11 +264,75 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     @Override
     public Set<K> keySet() {
-        return null;
+        Iterator MyHashMapIterator = iterator();
+        HashSet returnSet = new HashSet<>();
+        for (K key : this) {
+            returnSet.add(key);
+        }
+        return returnSet;
     }
 
     @Override
     public Iterator<K> iterator() {
-        return null;
+        return new MyHashMapIterator();
+    }
+
+    private class MyHashMapIterator implements Iterator {
+
+        private Collection nowBucket;
+
+        private Iterator nowIterator;
+
+        private int index;
+
+        private int count;
+
+        public MyHashMapIterator() {
+            index = 0;
+            count = 0;
+            nowBucket = getBucket();
+            nowIterator = getIterator(nowBucket);
+        }
+
+        private Iterator getIterator(Collection nowBucket) {
+            if (nowBucket == null) {
+                return null;
+            } else {
+                return nowBucket.iterator();
+            }
+        }
+
+        private Collection getBucket() {
+            while(index < buckets.length) {
+                if (buckets[index] != null) {
+                    Collection returnBucket = buckets[index];
+                    index += 1;
+                    return returnBucket;
+                } else {
+                    index += 1;
+                }
+            }
+            return null;
+        }
+        @Override
+        public boolean hasNext() {
+            return count < size();
+        }
+
+        @Override
+        public K next() {
+            Node returnNode = nextNode();
+            return returnNode.key;
+        }
+
+        public Node nextNode() {
+            if (nowIterator.hasNext() == false) {
+                nowBucket = getBucket();
+                nowIterator = getIterator(nowBucket);
+            }
+            Node returnNode = (Node) nowIterator.next();
+            count += 1;
+            return returnNode;
+        }
     }
 }
