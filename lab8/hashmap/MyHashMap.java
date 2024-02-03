@@ -215,7 +215,6 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
             buckets[index] = createBucket();
             Node newNode = createNode(key, value);
             buckets[index].add(newNode);
-            size += 1;
         } else {
             Iterator newIterator = targetMap.iterator();
             Node element;
@@ -228,9 +227,9 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
             }
             Node newNode = createNode(key, value);
             targetMap.add(newNode);
-            size += 1;
         }
-        if (size / buckets.length >= loadFactor) {
+        size += 1;
+        if ((size) / buckets.length >= loadFactor) {
             resize(this.buckets);
         }
     }
