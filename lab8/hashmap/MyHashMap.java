@@ -242,11 +242,13 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     private V remove(K key, Collection[] buckets) {
         int removeIndex = bucketIndex(key.hashCode(), buckets.length);
         Collection targetBucket = buckets[removeIndex];
-        Node returnNode = null;
         if (containsKey(key)) {
-            returnNode = getNode(key, buckets);
+            Node returnNode = getNode(key, buckets);
             if (targetBucket.remove(returnNode)) {
                 size -= 1;
+                if (targetBucket.size() == 0) {
+                    buckets[removeIndex] = null; //Note !!! Can't leave any empty Collection!
+                }
                 return returnNode.value;
             }
         }
@@ -264,7 +266,6 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     @Override
     public Set<K> keySet() {
-        Iterator MyHashMapIterator = iterator();
         HashSet returnSet = new HashSet<>();
         for (K key : this) {
             returnSet.add(key);
