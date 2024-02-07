@@ -5,7 +5,7 @@ import java.io.File;
 import static gitlet.Utils.join;
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
- *  @author TODO
+ *  @author Junru Wang
  */
 public class Main {
     /** Usage: java gitlet.Main ARGS, where ARGS contains

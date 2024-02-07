@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -32,30 +33,20 @@ public class Commit implements Serializable {
     private String parent;
     /** Time data*/
     private String timeStamp;
-
-    private String[] content;
+    private TreeMap<String, String> content;
 
     /* TODO: fill in the rest of this class. */
-    public Commit(String message, Commit parent, Date timeStamp, Object[] content) {
+    public Commit(String message, Commit parent, Date timeStamp, TreeMap content) {
         this.message = message;
-        if (parent == null) {
-            this.parent = null;
-        } else {
-            this.parent = sha1(parent);
-        }
-        String pattern = "MM/dd/yyyy HH:mm:ss";
-        DateFormat df = new SimpleDateFormat(pattern);
-        this.timeStamp = df.format(timeStamp);
-        int length = content.length;
-        this.content = new String[length];
-        for (int i = 0; i < length; i++) {
-            this.content[i] = sha1(content[i]);
-        }
+        this.parent = sha1(parent);
+        this.timeStamp = MainHelper.dateToString(timeStamp);
+        this.content = content;
     }
 
-    public void storeCommit(File CommitFolder) {
-        String selfSHA1 = sha1(this);
-        File commitFile = join(CommitFolder, selfSHA1);
-        writeObject(commitFile, this);
+    public Commit() {
+        message = "initial commit";
+        parent = null;
+        timeStamp = MainHelper.dateToString(new Date(0));
+        content = new TreeMap<>();
     }
 }
