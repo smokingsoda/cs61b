@@ -1,16 +1,11 @@
 package gitlet;
 
-import com.google.gson.JsonSerializationContext;
-import org.w3c.dom.events.EventException;
-
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -39,15 +34,14 @@ public class MainHelper {
      */
 
     public static void init() {
-        if (!gitletFolder.exists()) {
+        if (!validateGitlet()) {
             gitletFolder.mkdir();
             commits.mkdir();
             blobs.mkdir();
-            stagingArea.mkdir();
-            HashMap<String, String> stage = new HashMap<>();
-            save(stagingArea, stage);
+            TreeMap<String, String> stagingArea = new TreeMap<>();
+            saveAsName(stagingArea, gitletFolder, "stagingArea");
             Commit currentCommit = new Commit();
-            save(commits, currentCommit);
+            saveAsSHA1(currentCommit, commits);
             updateHEAD(currentCommit);
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
@@ -56,52 +50,71 @@ public class MainHelper {
     }
 
     public static void add(String fileName) {
+        if (! validateGitlet()) {
+            System.out.println("Not a valid gitlet repository");
+            System.exit(0);
+        }
         File addingFile = join(CWD, fileName);
+        TreeMap stagingArea = getStagingArea();
         if (addingFile.exists()) {
-            byte[] addingFileContent = loadByte(fileName, CWD);
-            String addingFileSHA1 = byteToSHA1(addingFileContent);
-
-        }
-    }
-
-    public static byte[] loadByte(String fileName, File folder) {
-        File loadFile = join(folder, fileName);
-        if (loadFile.exists()) {
-            return readContents(loadFile);
-        }
-        else {
-            System.out.printf("No file found: %d\n", fileName);
-            System.exit(0);
-            return null;
-        }
-    }
-    public static Object loadObject(String fileName, File folder, Class className) {
-        File loadFile = join(folder, fileName);
-        if (loadFile.exists()) {
-            return readObject(loadFile, className);
-        }
-        else {
-            System.out.printf("No file found: %d\n", fileName);
-            System.exit(0);
-            return null;
-        }
-    }
-
-    public static void save(File folder, Serializable obj) {
-        if (folder.exists()) {
-            String fileName = objToSHA1(obj);
-            File saveFile = join(folder, fileName);
-            if (!saveFile.exists()) {
-                writeObject(saveFile, obj);
+            byte[] addingFileContent = loadByte(addingFile);
+            Blob newBlob = new Blob(addingFileContent);
+            String newBlobSHA1 = objToSHA1(newBlob);
+            String HEAD = getHEAD();
+            Commit currentCommit = getCommit(HEAD);
+            if (!currentCommit.containsBlob(newBlobSHA1)) {
+                //String oldBlobSHA1 = (String) stagingArea.get(fileName);
+                //deleteBlob(oldBlobSHA1);// Delete old and invalid blob
+                stagingArea.put(fileName, newBlobSHA1); //Add to stagingArea or update
+                //saveAsName(newBlob, blobs, newBlobSHA1);//Save blob in blobs
+                saveAsName(stagingArea, gitletFolder, "stagingArea");//Save stagingArea
             } else {
-                System.out.printf("File exists: %d\n", fileName);
-                System.exit(0);
+                stagingArea.remove(fileName);
             }
-        }
-        else {
-            System.out.printf("This folder does NOT exist");
+        } else {
+            System.out.println("File does not exist.");
             System.exit(0);
         }
+    }
+
+    public static boolean validateGitlet() {
+        return gitletFolder.exists();
+    }
+    public static boolean deleteBlob(String bolbSHA1) {
+        if (bolbSHA1 != null) {
+            File blob = join(blobs, bolbSHA1);
+            return blob.delete();
+        } else {
+            return false;
+        }
+
+    }
+
+    public static byte[] loadByte(File file) {
+        return readContents(file);
+    }
+    public static String loadString(File file) {
+        return readContentsAsString(file);
+    }
+    public static Object loadObject(File file, Class className) {
+        return readObject(file, className);
+    }
+
+    public static void saveAsName(Serializable obj, File folder, String name) {
+        if (folder.exists()) {
+            String fileName = name;
+            File saveFile = join(folder, fileName);
+            writeObject(saveFile, obj);
+        }
+        else {
+            System.out.printf("From Function: saveAsName:\n" +
+                    "This folder does NOT exist");
+            System.exit(0);
+        }
+    }
+    public static void saveAsSHA1(Serializable obj, File folder) {
+        String fileName = objToSHA1(obj);
+        saveAsName(obj, folder, fileName);
     }
 
     public static String objToSHA1(Serializable obj) {
@@ -125,8 +138,23 @@ public class MainHelper {
         writeContents(HEAD, commitFileName);
     }
 
-    public static byte[] getHEAD() {
+    public static String getHEAD() {
         File HEAD = join(gitletFolder, "HEAD");
-        return loadByte("HEAD", gitletFolder);
+        return loadString(HEAD);
+    }
+
+    public static Commit getCommit(String commitSHA1) {
+        File commit = join(commits, commitSHA1);
+        if (commit.exists()) {
+            return (Commit) loadObject(commit, Commit.class);
+        } else {
+            System.out.printf("No such Commit found: %d\n", commitSHA1);
+            System.exit(0);
+            return null;
+        }
+    }
+
+    public static TreeMap getStagingArea() {
+        return (TreeMap) loadObject(stagingArea, TreeMap.class);
     }
 }
