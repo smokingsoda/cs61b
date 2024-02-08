@@ -13,24 +13,21 @@ public class MainHelper {
     static final File CWD = new File(System.getProperty("user.dir"));
     static final File gitletFolder = join(CWD, ".gitlet");
     static final File stagingArea = join(gitletFolder, "stagingArea");
+    static final File addStageFile = join(stagingArea, "addStage");
+    static final File removeStageFile = join(stagingArea, "removeStage");
+    static final File stagingAreaBlobs = join(stagingArea, "stagingAreaBlobs");
     static final File commits = join(gitletFolder, "commits");
     static final File blobs = join(gitletFolder, "blobs");
+
     /**
-     * Creates a new Gitlet version-control system in the
-     * current directory. This system will automatically
-     * start with one commit: a commit that contains no files
-     * and has the commit message initial commit (just like that,
-     * with no punctuation). It will have a single branch: master,
-     * which initially points to this initial commit, and master
-     * will be the current branch. The timestamp for this initial
-     * commit will be 00:00:00 UTC, Thursday, 1 January 1970 in
-     * whatever format you choose for dates (this is called “The
-     * (Unix) Epoch”, represented internally by the time 0.)
-     * Since the initial commit in all repositories created
-     * by Gitlet will have exactly the same content, it follows
-     * that all repositories will automatically share this commit
-     * (they will all have the same UID) and all commits in all
-     * repositories will trace back to it.
+     * .gitlet
+     *      -commits
+     *      -blobs
+     *      -stagingArea
+     *          -addStage(obj)
+     *          -removeStage(obj)
+     *          -stagingAreaBlobs
+     *      -HEAD
      */
 
     public static void init() {
@@ -38,10 +35,14 @@ public class MainHelper {
             gitletFolder.mkdir();
             commits.mkdir();
             blobs.mkdir();
-            TreeMap<String, String> stagingArea = new TreeMap<>();
-            saveAsName(stagingArea, gitletFolder, "stagingArea");
+            stagingArea.mkdir();
+            stagingAreaBlobs.mkdir();
+            Stage addStage = new Stage();
+            Stage removeStage = new Stage();
             Commit currentCommit = new Commit();
             saveAsSHA1(currentCommit, commits);
+            saveFile(addStage, addStageFile);
+            saveFile(removeStage, removeStageFile);
             updateHEAD(currentCommit);
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
@@ -55,21 +56,25 @@ public class MainHelper {
             System.exit(0);
         }
         File addingFile = join(CWD, fileName);
-        TreeMap stagingArea = getStagingArea();
         if (addingFile.exists()) {
-            byte[] addingFileContent = loadByte(addingFile);
-            Blob newBlob = new Blob(addingFileContent);
-            String newBlobSHA1 = objToSHA1(newBlob);
-            String HEAD = getHEAD();
-            Commit currentCommit = getCommit(HEAD);
-            if (!currentCommit.containsBlob(newBlobSHA1)) {
-                //String oldBlobSHA1 = (String) stagingArea.get(fileName);
-                //deleteBlob(oldBlobSHA1);// Delete old and invalid blob
-                stagingArea.put(fileName, newBlobSHA1); //Add to stagingArea or update
-                //saveAsName(newBlob, blobs, newBlobSHA1);//Save blob in blobs
-                saveAsName(stagingArea, gitletFolder, "stagingArea");//Save stagingArea
-            } else {
-                stagingArea.remove(fileName);
+            Commit currentCommit = getHEAD();
+            Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
+            if (!currentCommit.containsBlob(addingFile)) {
+                Blob addBlob = new Blob(addingFile.getAbsolutePath(), loadByte(addingFile));
+                //1.Create new blob
+                String addBlobName = addBlob.contentToSHA1();
+                //2. Convert the blob's content into SHA1
+                File addBlobFile = join(stagingAreaBlobs, addBlob.contentToSHA1());
+                //3. Create a file in addStage folder
+                saveFile(addBlob, addBlobFile);
+                //4. Store this blob in the certain file
+                addStageArea.putFile(addingFile.getAbsolutePath(), addBlobName);
+                //5. Store the addingFile's A path as key, the File content(SHA1) as value in case of looking up this file;
+                saveFile(addStageArea, addStageFile);
+                //6. Save the addStageArea
+            }
+            else {
+                addStageArea.removeFile(addingFile.getAbsolutePath());
             }
         } else {
             System.out.println("File does not exist.");
@@ -77,17 +82,12 @@ public class MainHelper {
         }
     }
 
+    public static void saveFile(Serializable obj, File file) {
+        writeObject(file, obj);
+    }
+
     public static boolean validateGitlet() {
         return gitletFolder.exists();
-    }
-    public static boolean deleteBlob(String bolbSHA1) {
-        if (bolbSHA1 != null) {
-            File blob = join(blobs, bolbSHA1);
-            return blob.delete();
-        } else {
-            return false;
-        }
-
     }
 
     public static byte[] loadByte(File file) {
@@ -96,10 +96,11 @@ public class MainHelper {
     public static String loadString(File file) {
         return readContentsAsString(file);
     }
-    public static Object loadObject(File file, Class className) {
+    public static Serializable loadObject(File file, Class className) {
         return readObject(file, className);
     }
 
+    //TODO: Maybe I want to remove this method?
     public static void saveAsName(Serializable obj, File folder, String name) {
         if (folder.exists()) {
             String fileName = name;
@@ -115,6 +116,16 @@ public class MainHelper {
     public static void saveAsSHA1(Serializable obj, File folder) {
         String fileName = objToSHA1(obj);
         saveAsName(obj, folder, fileName);
+    }
+    public static String fileToSHA1(File file) {
+        if (file.exists()) {
+            Serializable obj = loadObject(file, Serializable.class);
+            return objToSHA1(obj);
+        } else {
+            System.out.println("file To SHA1");
+            System.exit(0);
+            return null;
+        }
     }
 
     public static String objToSHA1(Serializable obj) {
@@ -138,9 +149,11 @@ public class MainHelper {
         writeContents(HEAD, commitFileName);
     }
 
-    public static String getHEAD() {
+    public static Commit getHEAD() {
         File HEAD = join(gitletFolder, "HEAD");
-        return loadString(HEAD);
+        String targetCommitSHA1 =  loadString(HEAD);
+        File targetCommitFile = join(commits, targetCommitSHA1);
+        return (Commit) loadObject(targetCommitFile, Commit.class);
     }
 
     public static Commit getCommit(String commitSHA1) {
@@ -154,7 +167,4 @@ public class MainHelper {
         }
     }
 
-    public static TreeMap getStagingArea() {
-        return (TreeMap) loadObject(stagingArea, TreeMap.class);
-    }
 }

@@ -33,10 +33,10 @@ public class Commit implements Serializable {
     private String parent;
     /** Time data*/
     private String timeStamp;
-    private TreeMap<String, String> content;
+    private TreeMap<File, String> content;
 
     /* TODO: fill in the rest of this class. */
-    public Commit(String message, Commit parent, Date timeStamp, TreeMap<String, String> content) {
+    public Commit(String message, Commit parent, Date timeStamp, TreeMap<File, String> content) {
         this.message = message;
         this.parent = sha1(parent);
         this.timeStamp = MainHelper.dateToString(timeStamp);
@@ -54,7 +54,7 @@ public class Commit implements Serializable {
         return this.content;
     }
 
-    public boolean containsBlob(String blobName) {
-        return getContent().containsKey(blobName);
+    public boolean containsBlob(File blob) {
+        return getContent().containsKey(blob);
     }
 }
