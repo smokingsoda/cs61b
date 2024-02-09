@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date; // TODO: You'll likely use this in this class
+import java.util.Set;
 import java.util.TreeMap;
 
 import static gitlet.Utils.*;
@@ -33,12 +34,12 @@ public class Commit implements Serializable {
     private String parent;
     /** Time data*/
     private String timeStamp;
-    private TreeMap<File, String> content;
+    private TreeMap<String, String> content;
 
     /* TODO: fill in the rest of this class. */
-    public Commit(String message, Commit parent, Date timeStamp, TreeMap<File, String> content) {
+    public Commit(String message, Commit parent, Date timeStamp, TreeMap<String, String> content) {
         this.message = message;
-        this.parent = sha1(parent);
+        this.parent = MainHelper.objToSHA1(parent);
         this.timeStamp = MainHelper.dateToString(timeStamp);
         this.content = content;
     }
@@ -57,4 +58,22 @@ public class Commit implements Serializable {
     public boolean containsBlob(File blob) {
         return getContent().containsKey(blob);
     }
+
+    public void putBlob(String path, String blob) {
+        this.content.put(path, blob);
+    }
+
+    public String removeBlob(String path) {
+        return this.content.remove(path);
+    }
+
+    public Commit createChildCommit(String message, Date timeStamp) {
+        TreeMap<String, String> childContent = new TreeMap<>();
+        Set parentContentSet = content.keySet();
+        for(Object path : parentContentSet) {
+            childContent.put((String)path, content.get(path));
+        }//Copy the content
+        return new Commit(message, this, timeStamp, childContent);
+    }
+
 }

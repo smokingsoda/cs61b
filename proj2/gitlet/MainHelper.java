@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 import java.util.TreeMap;
 
 import static gitlet.Utils.*;
@@ -18,6 +19,7 @@ public class MainHelper {
     static final File stagingAreaBlobs = join(stagingArea, "stagingAreaBlobs");
     static final File commits = join(gitletFolder, "commits");
     static final File blobs = join(gitletFolder, "blobs");
+    static final File HEAD = join(gitletFolder, "HEAD");
 
     /**
      * .gitlet
@@ -82,25 +84,51 @@ public class MainHelper {
         }
     }
 
+    public static void commit(String message, Date timeStamp) {
+        Commit parentCommit = getHEAD();//1.Get the current Commit
+        Commit childCommit = parentCommit.createChildCommit(message, timeStamp);//2.Create a brand-new Commit(everything is different)
+        Stage addStage = (Stage) loadObject(addStageFile, Stage.class);
+        Stage removeStage = (Stage) loadObject(removeStageFile, Stage.class);
+        addToCommit(addStage, childCommit);//3.According to the stageArea, Modify the childCommit
+        removeFromCommit(removeStage, childCommit);
+        saveAsSHA1(childCommit, commits);//4.Save childCommit
+        //5.Move the blobs in addStageArea to blobs File
+        addStage.clearStageTree();//5.Clear stage
+        removeStage.clearStageTree();
+        saveFile(addStage, addStageFile);//6.Save stage
+        saveFile(removeStage, removeStageFile);
+        //7.Empty stageAreaBlobs
+    }
+
+    /**
+     * ===== Object Persistence Functions =====
+     */
+    public static Serializable loadObject(File file, Class className) {
+        return readObject(file, className);
+    }
     public static void saveFile(Serializable obj, File file) {
         writeObject(file, obj);
     }
 
-    public static boolean validateGitlet() {
-        return gitletFolder.exists();
+
+    /**
+     * ===== Convert Object into SHA1 =====
+     */
+    public static String objToSHA1(Serializable obj) {
+        byte[] objData = serialize(obj);
+        return sha1(objData);
     }
 
+
+    /**
+     * ===== Alternative Load & Save Functions =====
+     */
     public static byte[] loadByte(File file) {
         return readContents(file);
     }
     public static String loadString(File file) {
         return readContentsAsString(file);
     }
-    public static Serializable loadObject(File file, Class className) {
-        return readObject(file, className);
-    }
-
-    //TODO: Maybe I want to remove this method?
     public static void saveAsName(Serializable obj, File folder, String name) {
         if (folder.exists()) {
             String fileName = name;
@@ -113,49 +141,34 @@ public class MainHelper {
             System.exit(0);
         }
     }
+    //TODO: Maybe I want to remove this method?
     public static void saveAsSHA1(Serializable obj, File folder) {
         String fileName = objToSHA1(obj);
         saveAsName(obj, folder, fileName);
     }
-    public static String fileToSHA1(File file) {
-        if (file.exists()) {
-            Serializable obj = loadObject(file, Serializable.class);
-            return objToSHA1(obj);
-        } else {
-            System.out.println("file To SHA1");
-            System.exit(0);
-            return null;
-        }
-    }
 
-    public static String objToSHA1(Serializable obj) {
-        byte[] objData = serialize(obj);
-        return sha1(objData);
-    }
 
-    public static String byteToSHA1(byte[] obj) {
-        return sha1(obj);
-    }
-
+    /**
+     * ===== Commit Related Functions =====
+     */
     public static String dateToString(Date date) {
         String pattern = "MM/dd/yyyy HH:mm:ss";
         DateFormat df = new SimpleDateFormat(pattern);
         return df.format(date);
     }
-
-    public static void updateHEAD(Commit commit) {
-        String commitFileName = objToSHA1(commit);
-        File HEAD = join(gitletFolder, "HEAD");
-        writeContents(HEAD, commitFileName);
+    public static void addToCommit(Stage addStage, Commit currentCommit) {
+        Set addStageKeySet = addStage.stageTreeKeySet();
+        for(Object path : addStageKeySet) {
+            String
+            currentCommit.putBlob((String) path, addStage.getFileSHA1((String) path));
+        }
     }
-
-    public static Commit getHEAD() {
-        File HEAD = join(gitletFolder, "HEAD");
-        String targetCommitSHA1 =  loadString(HEAD);
-        File targetCommitFile = join(commits, targetCommitSHA1);
-        return (Commit) loadObject(targetCommitFile, Commit.class);
+    public static void removeFromCommit(Stage removeStage, Commit currentCommit) {
+        Set removeStageKeySet = removeStage.stageTreeKeySet();
+        for(Object path : removeStageKeySet) {
+            currentCommit.removeBlob((String) path);
+        }
     }
-
     public static Commit getCommit(String commitSHA1) {
         File commit = join(commits, commitSHA1);
         if (commit.exists()) {
@@ -167,4 +180,25 @@ public class MainHelper {
         }
     }
 
+    /**
+     * ===== HEAD Related Functions =====
+     */
+    public static void updateHEAD(Commit commit) {
+        String commitFileName = objToSHA1(commit);
+        writeContents(HEAD, commitFileName);
+    }
+
+    public static Commit getHEAD() {
+        String targetCommitSHA1 = loadString(HEAD);
+        File targetCommitFile = join(commits, targetCommitSHA1);
+        return (Commit) loadObject(targetCommitFile, Commit.class);
+    }
+
+
+    /**
+     * ===== Main Class Related Function =====
+     */
+    public static boolean validateGitlet() {
+        return gitletFolder.exists();
+    }
 }

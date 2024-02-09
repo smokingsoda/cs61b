@@ -27,9 +27,13 @@ public class Stage implements Serializable {
     public String removeFile(String path) {
         return stageTree.remove(path.toLowerCase());
     }
-    public void printAllKey() {
-        Set S = stageTree.keySet();
-        System.out.println(S);
+
+    public Set stageTreeKeySet() {
+        return stageTree.keySet();
+    }
+
+    public void clearStageTree() {
+        stageTree.clear();
     }
 
 }

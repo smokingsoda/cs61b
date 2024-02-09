@@ -1,6 +1,7 @@
 package gitlet;
 
 import java.io.File;
+import java.util.Date;
 
 import static gitlet.Utils.join;
 
@@ -26,11 +27,17 @@ public class Main {
                 MainHelper.init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                // TODO: handle the "add [filename]" command
                 validateNumArgs("add", args, 2);
                 MainHelper.add(args[1]);
                 break;
             // TODO: FILL THE REST IN
+            case "commit":
+                // TODO: handle the "commit [message]" command
+                validateNumArgs("commit", args, 2);
+                Date nowDate = new Date();
+                MainHelper.commit(args[1], nowDate);
+                break;
         }
     }
 
