@@ -43,6 +43,13 @@ public class Main {
 
     public static void validateNumArgs(String cmd, String[] Args, int n) {
         if (Args.length != n) {
+            switch (cmd) {
+                case "commit":
+                    if (Args.length == 1) {
+                        System.out.println("Please enter a commit message. ");
+                        break;
+                    }
+            }
             System.out.println("Incorrect operands.");
             System.exit(0);
         }

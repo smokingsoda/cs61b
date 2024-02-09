@@ -52,26 +52,30 @@ public class Commit implements Serializable {
     }
 
     public TreeMap getContent() {
-        return this.content;
+        return content;
     }
 
-    public boolean containsBlob(File blob) {
-        return getContent().containsKey(blob);
+    public boolean containsBlob(String blob) {
+        return content.containsKey(blob);
     }
 
     public void putBlob(String path, String blob) {
-        this.content.put(path, blob);
+        content.put(path.toLowerCase(), blob);
+    }
+
+    public String getBlob(String path) {
+        return content.get(path.toLowerCase());
     }
 
     public String removeBlob(String path) {
-        return this.content.remove(path);
+        return content.remove(path.toLowerCase());
     }
 
     public Commit createChildCommit(String message, Date timeStamp) {
         TreeMap<String, String> childContent = new TreeMap<>();
-        Set parentContentSet = content.keySet();
-        for(Object path : parentContentSet) {
-            childContent.put((String)path, content.get(path));
+        Set<String> parentContentSet = content.keySet();
+        for(String path : parentContentSet) {
+            childContent.put(path, content.get(path));
         }//Copy the content
         return new Commit(message, this, timeStamp, childContent);
     }

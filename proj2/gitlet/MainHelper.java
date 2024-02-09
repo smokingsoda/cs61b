@@ -61,23 +61,25 @@ public class MainHelper {
         if (addingFile.exists()) {
             Commit currentCommit = getHEAD();
             Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
-            if (!currentCommit.containsBlob(addingFile)) {
-                Blob addBlob = new Blob(addingFile.getAbsolutePath(), loadByte(addingFile));
-                //1.Create new blob
-                String addBlobName = addBlob.contentToSHA1();
-                //2. Convert the blob's content into SHA1
+            String addingFilePath = addingFile.getAbsolutePath();
+            Blob addBlob = new Blob(addingFilePath, loadByte(addingFile));
+            //1.Create new blob
+            String addBlobName = addBlob.contentToSHA1();
+            //2. Convert the blob's content into SHA1
+            String currentCommitBlob = currentCommit.getBlob(addingFilePath);
+            if (currentCommitBlob == null || !(currentCommitBlob.equals(addBlobName))) {
                 File addBlobFile = join(stagingAreaBlobs, addBlobName);
                 //3. Create a file in addStage folder
                 saveFile(addBlob, addBlobFile);
                 //4. Store this blob in the certain file
                 addStageArea.putFile(addingFile.getAbsolutePath(), addBlobName);
                 //5. Store the addingFile's A path as key, the File content(SHA1) as value in case of looking up this file;
-                saveFile(addStageArea, addStageFile);
-                //6. Save the addStageArea
             }
             else {
-                addStageArea.removeFile(addingFile.getAbsolutePath());
+                addStageArea.removeFile(addingFilePath);
             }
+            saveFile(addStageArea, addStageFile);
+            //6. Save the addStageArea
         } else {
             System.out.println("File does not exist.");
             System.exit(0);
@@ -85,19 +87,28 @@ public class MainHelper {
     }
 
     public static void commit(String message, Date timeStamp) {
+        if (! validateGitlet()) {
+            System.out.println("Not a valid gitlet repository");
+            System.exit(0);
+        }
         Commit parentCommit = getHEAD();//1.Get the current Commit
         Commit childCommit = parentCommit.createChildCommit(message, timeStamp);//2.Create a brand-new Commit(everything is different)
         Stage addStage = (Stage) loadObject(addStageFile, Stage.class);
         Stage removeStage = (Stage) loadObject(removeStageFile, Stage.class);
-        addToCommit(addStage, childCommit);//3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
-        removeFromCommit(removeStage, childCommit);
-        saveAsSHA1(childCommit, commits);//4.Save childCommit
-        updateHEAD(childCommit); // Upadate Head
-        addStage.clearStageTree();//5.Clear stage
-        removeStage.clearStageTree();
-        saveFile(addStage, addStageFile);//6.Save stage
-        saveFile(removeStage, removeStageFile);
-        clearStagingAreaBlobs();
+        if (addStage.isEmpty() && removeStage.isEmpty()) {
+            System.out.println("No changes added to the commit.");
+            System.exit(0);
+        } else {
+            addToCommit(addStage, childCommit);//3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
+            removeFromCommit(removeStage, childCommit);
+            saveAsSHA1(childCommit, commits);//4.Save childCommit
+            updateHEAD(childCommit); // Upadate Head
+            addStage.clearStageTree();//5.Clear stage
+            removeStage.clearStageTree();
+            saveFile(addStage, addStageFile);//6.Save stage
+            saveFile(removeStage, removeStageFile);
+            clearStagingAreaBlobs();
+        }
     }
 
     /**
@@ -157,12 +168,12 @@ public class MainHelper {
         return df.format(date);
     }
     public static void addToCommit(Stage addStage, Commit currentCommit) {
-        Set addStageKeySet = addStage.stageTreeKeySet();
-        for(Object path : addStageKeySet) {
-            String blobName = addStage.getFileSHA1((String) path);
+        Set<String> addStageKeySet = addStage.stageTreeKeySet();
+        for(String path : addStageKeySet) {
+            String blobName = addStage.getFileSHA1(path);
             File blob = join(stagingAreaBlobs, blobName);
-            blob.renameTo(blobs);
-            currentCommit.putBlob((String) path, blobName);
+            blob.renameTo(join(blobs, blobName));
+            currentCommit.putBlob(path, blobName);
         }
     }
     public static void removeFromCommit(Stage removeStage, Commit currentCommit) {
@@ -197,7 +208,8 @@ public class MainHelper {
     }
 
     public static void clearStagingAreaBlobs() {
-        File[] files = stagingArea.listFiles();
+        File[] files = stagingAreaBlobs.listFiles();
+        //System.out.println(files[0].getAbsolutePath());
         for (File f : files) {
             f.delete();
         }

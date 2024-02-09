@@ -16,6 +16,10 @@ public class Stage implements Serializable {
         return stageTree.containsKey(path.toLowerCase());
     }
 
+    public boolean isEmpty() {
+        return stageTree.size() == 0;
+    }
+
     public String getFileSHA1(String path) {
         return stageTree.get(path.toLowerCase());
     }
