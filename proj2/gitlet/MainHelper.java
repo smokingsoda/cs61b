@@ -19,6 +19,8 @@ public class MainHelper {
     static final File commits = join(gitletFolder, "commits");
     static final File blobs = join(gitletFolder, "blobs");
     static final File HEAD = join(gitletFolder, "HEAD");
+    static final File branches = join(gitletFolder, "branches");
+    static final File masterBranch = join(branches, "master");
 
     /**
      * .gitlet
@@ -41,13 +43,15 @@ public class MainHelper {
             blobs.mkdir();
             stagingArea.mkdir();
             stagingAreaBlobs.mkdir();
+            branches.mkdir();
             Stage addStage = new Stage();
             Stage removeStage = new Stage();
             Commit currentCommit = new Commit();
             saveAsSHA1(currentCommit, commits);
             saveFile(addStage, addStageFile);
             saveFile(removeStage, removeStageFile);
-            updateHEAD(currentCommit);
+            updateBranch(currentCommit, "master");
+            updateHEAD("master");
         } else {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
         }
@@ -61,7 +65,7 @@ public class MainHelper {
         }
         File addingFile = join(CWD, fileName);
         if (addingFile.exists()) {
-            Commit currentCommit = getHEAD();
+            Commit currentCommit = getHEADCommit();
             Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
             String addingFilePath = addingFile.getAbsolutePath();
             Blob addBlob = new Blob(addingFilePath, loadByte(addingFile));
@@ -93,7 +97,8 @@ public class MainHelper {
             System.out.println("Not a valid gitlet repository");
             System.exit(0);
         }
-        Commit parentCommit = getHEAD();//1.Get the current Commit
+        Commit parentCommit = getHEADCommit();//1.Get the current Commit
+        String currentBranch = getHEADBranch();
         Commit childCommit = parentCommit.createChildCommit(message, timeStamp);//2.Create a brand-new Commit(everything is different)
         Stage addStage = (Stage) loadObject(addStageFile, Stage.class);
         Stage removeStage = (Stage) loadObject(removeStageFile, Stage.class);
@@ -104,7 +109,8 @@ public class MainHelper {
             addToCommit(addStage, childCommit);//3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
             removeFromCommit(removeStage, childCommit);
             saveAsSHA1(childCommit, commits);//4.Save childCommit
-            updateHEAD(childCommit); // Upadate Head
+            updateBranch(childCommit, currentBranch);
+            updateHEAD(currentBranch); // Upadate Head
             addStage.clearStageTree();//5.Clear stage
             removeStage.clearStageTree();
             saveFile(addStage, addStageFile);//6.Save stage
@@ -119,7 +125,7 @@ public class MainHelper {
             System.exit(0);
         }
         File removingFile = join(CWD, fileName);
-        Commit currentCommit = getHEAD();
+        Commit currentCommit = getHEADCommit();
         Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
         Stage removeStageArea = (Stage) loadObject(removeStageFile, Stage.class);
         String removingFilePath = removingFile.getAbsolutePath();
@@ -146,7 +152,8 @@ public class MainHelper {
             System.out.println("Not a valid gitlet repository");
             System.exit(0);
         }
-        String currentCommitName = getHEADName();
+        String currentBranch = getHEADBranch();
+        String currentCommitName = getBranchCommitName(currentBranch);
         recursiveLog(currentCommitName);
     }
 
@@ -216,11 +223,7 @@ public class MainHelper {
     /**
      * ===== Commit Related Functions =====
      */
-    public static String dateToString(Date date) {
-        String pattern = "MM/dd/yyyy HH:mm:ss";
-        DateFormat df = new SimpleDateFormat(pattern);
-        return df.format(date);
-    }
+
     public static void addToCommit(Stage addStage, Commit currentCommit) {
         Set<String> addStageKeySet = addStage.stageTreeKeySet();
         for(String path : addStageKeySet) {
@@ -236,33 +239,34 @@ public class MainHelper {
             currentCommit.removeBlob(path);
         }
     }
-    public static Commit getCommit(String commitSHA1) {
-        File commit = join(commits, commitSHA1);
-        if (commit.exists()) {
-            return (Commit) loadObject(commit, Commit.class);
-        } else {
-            System.out.printf("No such Commit found: %d\n", commitSHA1);
-            System.exit(0);
-            return null;
-        }
-    }
 
     /**
      * ===== HEAD Related Functions =====
      */
-    public static void updateHEAD(Commit commit) {
-        String commitFileName = objToSHA1(commit);
-        writeContents(HEAD, commitFileName);
+    public static void updateHEAD(String branchName) {
+        writeContents(HEAD, branchName);
     }
 
-    public static Commit getHEAD() {
-        String targetCommitSHA1 = loadString(HEAD);
+    public static void updateBranch(Commit currentCommit, String branchName) {
+        File currentBranch = join(branches, branchName);
+        String currentCommitSHA1 = objToSHA1(currentCommit);
+        writeContents(currentBranch, currentCommitSHA1);
+    }
+
+    public static Commit getHEADCommit() {
+        String targetBranch = loadString(HEAD);
+        String targetCommitSHA1 = loadString(join(branches, targetBranch));
         File targetCommitFile = join(commits, targetCommitSHA1);
         return (Commit) loadObject(targetCommitFile, Commit.class);
     }
 
-    public static String getHEADName() {
+    public static String getHEADBranch() {
         return loadString(HEAD);
+    }
+
+    public static String getBranchCommitName(String branchName) {
+        File currentBranch = join(branches, branchName);
+        return loadString(currentBranch);
     }
 
     public static void clearStagingAreaBlobs() {
