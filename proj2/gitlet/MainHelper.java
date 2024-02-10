@@ -1,11 +1,14 @@
 package gitlet;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import static gitlet.Utils.*;
 
@@ -172,6 +175,131 @@ public class MainHelper {
         }
     }
 
+    public static void status() {
+        if (!validateGitlet()) {
+            System.out.println("Not a valid gitlet repository");
+            System.exit(0);
+        }
+        TreeMap<String, String> modificationFileMap = new TreeMap<>();
+        TreeSet<String> untrackedFileSet = new TreeSet<>();
+        Commit currentCommit = getHEADCommit();
+        Stage addStage = (Stage) loadObject(addStageFile, Stage.class);
+        Stage removeStage = (Stage) loadObject(removeStageFile, Stage.class);
+        Set<String> addStageFileSet = addStage.stageTreeKeySet();
+        Set<String> removeStageFileSet = removeStage.stageTreeKeySet();
+        Set<String> stagedFilesSet = new TreeSet();
+        Set<String> removedFilesSet = new TreeSet<>();
+        TreeSet<String> branchesSet = new TreeSet<>();
+        TreeSet<String> allFile = new TreeSet<>();
+        /**
+         * === Branch Part ===
+         */
+        System.out.println("=== Branches ===");
+        File[] branchesFile = branches.listFiles();
+        String currentBranch = getHEADBranch();
+        for(File f : branchesFile) {
+            String fName = f.getName();
+            branchesSet.add(fName);
+        }
+        for(String fName : branchesSet) {
+            if (fName.equals(currentBranch)) {
+                fName = "*" + fName;
+            }
+            System.out.println(fName);
+        }
+        System.out.println();
+        /**
+         * === Working Directory File Part ===
+         */
+        //CWD files
+        File[] CWDFile = CWD.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.exists() && pathname.isFile();
+            }
+        });
+        for (File f : CWDFile) {
+            allFile.add(f.getAbsolutePath().toLowerCase());
+        }
+
+        //addStage files
+        for (String fAbsolutePath : addStageFileSet) {
+            allFile.add(fAbsolutePath.toLowerCase());
+        }
+        //removeStage files
+        for (String fAbsolutePath : removeStageFileSet) {
+            allFile.add(fAbsolutePath.toLowerCase());
+        }
+
+        for (String fAbsolutePath : allFile) {
+            File f = new File(fAbsolutePath);
+            String fSHA1 = loadFileToSHA1(f);
+            String fName = f.getName();
+            if (f.exists()
+                    && currentCommit.containsBlob(fAbsolutePath)
+                        && !fSHA1.equals(currentCommit.getBlob(fAbsolutePath))
+                            && ! addStage.containsFile(fAbsolutePath)) {
+                //Tracked in the current commit, changed in the working directory, but not staged;
+                modificationFileMap.put(fName, "modified");
+                continue;
+            } else if (f.exists()
+                        && addStage.containsFile(fAbsolutePath)
+                            && !fSHA1.equals(addStage.getFileSHA1(fAbsolutePath))) {
+                //Staged for addition, but with different contents than in the working directory;
+                modificationFileMap.put(fName, "modified");
+                continue;
+            } else if (addStage.containsFile(fAbsolutePath) && !f.exists()) {
+                //Staged for addition, but deleted in the working directory;
+                modificationFileMap.put(fName, "deleted");
+                continue;
+            } else if (!removeStage.containsFile(fAbsolutePath)
+                    && currentCommit.containsBlob(fAbsolutePath) && ! f.exists()) {
+                //Not staged for removal, but tracked in the current commit and deleted from the working directory.
+                modificationFileMap.put(fName, "deleted");
+            } else if (addStage.containsFile(fAbsolutePath)) {
+                stagedFilesSet.add(fName);
+            } else if (removeStage.containsFile(fAbsolutePath)) {
+                removedFilesSet.add(fName);
+            } else if (!addStage.containsFile(fAbsolutePath) && ! currentCommit.containsBlob(fAbsolutePath)) {
+                untrackedFileSet.add(fName);
+            }
+        }
+
+        /**
+         * === Stage File Part ===
+         */
+        System.out.println("=== Staged Files ===");
+        for (String fName : stagedFilesSet) {
+            System.out.println(fName);
+        }
+        System.out.println();
+        /**
+         * === Remove File Part ===
+         */
+        System.out.println("=== Removed Files ===");
+        for (String fName : removedFilesSet) {
+            System.out.println(fName);
+        }
+        System.out.println();
+        /**
+         * === Modification File Part ===
+         */
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        Set<String> modificationFileSet = modificationFileMap.keySet();
+        for (String fName : modificationFileSet) {
+            System.out.println(fName + " (" + modificationFileMap.get(fName) + ")");
+        }
+        System.out.println();
+        /**
+         * === Untracked File Part ===
+         */
+        System.out.println("=== Untracked Files ===");
+        for (String fName : untrackedFileSet) {
+            System.out.println(fName);
+        }
+        System.out.println();
+    }
+
     /**
      * ===== Object Persistence Functions =====
      */
@@ -191,7 +319,6 @@ public class MainHelper {
         return sha1(objData);
     }
 
-
     /**
      * ===== Alternative Load & Save Functions =====
      */
@@ -200,6 +327,14 @@ public class MainHelper {
     }
     public static String loadString(File file) {
         return readContentsAsString(file);
+    }
+    public static String loadFileToSHA1(File file) {
+        if (file.exists()) {
+            return sha1(loadByte(file));
+        }
+        else {
+            return null;
+        }
     }
     public static void saveAsName(Serializable obj, File folder, String name) {
         if (folder.exists()) {

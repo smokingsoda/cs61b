@@ -48,6 +48,10 @@ public class Main {
                 validateNumArgs("log", args, 1);
                 MainHelper.log();
                 break;
+            case "status":
+                //TODO : handle the "status" command
+                validateNumArgs("status", args, 1);
+                MainHelper.status();
         }
     }
 
