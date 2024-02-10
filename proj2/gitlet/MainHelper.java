@@ -29,6 +29,9 @@ public class MainHelper {
      *          -removeStage(obj)
      *          -stagingAreaBlobs
      *      -HEAD
+     *      -branches
+     *          -master
+     *          -other branches
      */
 
     public static void init() {
