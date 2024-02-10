@@ -139,6 +139,10 @@ public class MainHelper {
     }
 
     public static void log() {
+        if (!validateGitlet()) {
+            System.out.println("Not a valid gitlet repository");
+            System.exit(0);
+        }
         String currentCommitName = getHEADName();
         recursiveLog(currentCommitName);
     }

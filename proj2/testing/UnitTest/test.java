@@ -48,8 +48,10 @@ public class test {
 
     @Test
     public void test4() {
-        String[] args = {"rm", "Hello.txt"};
-        Main.main(args);
+        String[] args1 = {"add", "Hello.txt"};
+        String[] args2 = {"rm", "Hello.txt"};
+        Main.main(args1);
+        Main.main(args2);
     }
 
 }

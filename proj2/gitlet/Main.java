@@ -42,10 +42,12 @@ public class Main {
                 //TODO: handle the "rm [filename]" command
                 validateNumArgs("rm", args, 2);
                 MainHelper.rm(args[1]);
+                break;
             case "log":
                 //TODO: handle the "log" command
                 validateNumArgs("log", args, 1);
                 MainHelper.log();
+                break;
         }
     }
 
