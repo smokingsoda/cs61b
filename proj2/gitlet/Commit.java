@@ -55,8 +55,8 @@ public class Commit implements Serializable {
         return content;
     }
 
-    public boolean containsBlob(String blob) {
-        return content.containsKey(blob);
+    public boolean containsBlob(String path) {
+        return content.containsKey(path.toLowerCase());
     }
 
     public void putBlob(String path, String blob) {

@@ -38,6 +38,10 @@ public class Main {
                 Date nowDate = new Date();
                 MainHelper.commit(args[1], nowDate);
                 break;
+            case "rm":
+                //TODO: handle the "rm [filename]" command
+                validateNumArgs("rm", args, 2);
+                MainHelper.rm(args[1]);
         }
     }
 

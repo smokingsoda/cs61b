@@ -111,6 +111,34 @@ public class MainHelper {
         }
     }
 
+    public static void rm(String fileName) {
+        if (!validateGitlet()) {
+            System.out.println("Not a valid gitlet repository");
+            System.exit(0);
+        }
+        File removingFile = join(CWD, fileName);
+        Commit currentCommit = getHEAD();
+        Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
+        Stage removeStageArea = (Stage) loadObject(removeStageFile, Stage.class);
+        String removingFilePath = removingFile.getAbsolutePath();
+        Boolean addStageAreaContains = addStageArea.containsFile(removingFilePath);
+        Boolean currentCommitContains = currentCommit.containsBlob(removingFilePath);
+        if (addStageAreaContains || currentCommitContains) {
+            if (addStageAreaContains) {
+                addStageArea.removeFile(removingFilePath);
+            }
+            if (currentCommitContains) {
+                removeStageArea.putFile(removingFilePath, "dummy SHA1");
+                restrictedDelete(removingFilePath);
+            }
+            saveFile(addStageArea, addStageFile);
+            saveFile(removeStageArea, removeStageFile);
+        } else {
+            System.out.println("No reason to remove the file.");
+            System.exit(0);
+        }
+    }
+
     /**
      * ===== Object Persistence Functions =====
      */
@@ -177,9 +205,9 @@ public class MainHelper {
         }
     }
     public static void removeFromCommit(Stage removeStage, Commit currentCommit) {
-        Set removeStageKeySet = removeStage.stageTreeKeySet();
-        for(Object path : removeStageKeySet) {
-            currentCommit.removeBlob((String) path);
+        Set<String> removeStageKeySet = removeStage.stageTreeKeySet();
+        for(String path : removeStageKeySet) {
+            currentCommit.removeBlob(path);
         }
     }
     public static Commit getCommit(String commitSHA1) {

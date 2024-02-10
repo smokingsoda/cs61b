@@ -39,7 +39,7 @@ public class test {
         Stage addStage  = (Stage) MainHelper.loadObject(addStageFile, Stage.class);
         Commit currentCommit = MainHelper.getHEAD();
         File Hello = join(CWD, "Hello.txt");
-        byte[] HelloByte = MainHelper.loadByte(Hello);
-        String SHA1 = sha1(HelloByte);
+        //byte[] HelloByte = MainHelper.loadByte(Hello);
+        //String SHA1 = sha1(HelloByte);
     }
 }
