@@ -1,15 +1,18 @@
 package testing.UnitTest;
 
 import gitlet.Commit;
+import gitlet.Main;
 import gitlet.MainHelper;
 import gitlet.Stage;
 import org.junit.Test;
+
 
 import java.io.File;
 import java.util.Date;
 
 import static testing.UnitTest.Utils.join;
 import static testing.UnitTest.Utils.sha1;
+
 
 
 public class test {
@@ -34,12 +37,19 @@ public class test {
         Commit childCommit = (Commit)MainHelper.loadObject(join(commits, "6d6b7dade3f79a8d2bbe3e2cde917329de2fb964"), Commit.class);
     }
 
-    @Test
+    //@Test
     public void test3() {
-        Stage addStage  = (Stage) MainHelper.loadObject(addStageFile, Stage.class);
+        Stage addStage = (Stage) MainHelper.loadObject(addStageFile, Stage.class);
         Commit currentCommit = MainHelper.getHEAD();
         File Hello = join(CWD, "Hello.txt");
         //byte[] HelloByte = MainHelper.loadByte(Hello);
         //String SHA1 = sha1(HelloByte);
     }
+
+    @Test
+    public void test4() {
+        String[] args = {"rm", "Hello.txt"};
+        Main.main(args);
+    }
+
 }

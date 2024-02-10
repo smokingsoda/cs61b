@@ -6,7 +6,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
-import java.util.TreeMap;
 
 import static gitlet.Utils.*;
 
@@ -139,6 +138,26 @@ public class MainHelper {
         }
     }
 
+    public static void log() {
+        String currentCommitName = getHEADName();
+        recursiveLog(currentCommitName);
+    }
+
+    public static void recursiveLog(String childCommitName) {
+        File childCommitFile = join(commits, childCommitName);
+        Commit childCommit = (Commit) loadObject(childCommitFile, Commit.class);
+        String parentCommitName = childCommit.getParent();
+        System.out.println("===");
+        System.out.println("commit " + childCommitName);
+        System.out.println(childCommit);
+        System.out.println();
+        if (parentCommitName == null) {
+            return;
+        } else {
+            recursiveLog(parentCommitName);
+        }
+    }
+
     /**
      * ===== Object Persistence Functions =====
      */
@@ -233,6 +252,10 @@ public class MainHelper {
         String targetCommitSHA1 = loadString(HEAD);
         File targetCommitFile = join(commits, targetCommitSHA1);
         return (Commit) loadObject(targetCommitFile, Commit.class);
+    }
+
+    public static String getHEADName() {
+        return loadString(HEAD);
     }
 
     public static void clearStagingAreaBlobs() {

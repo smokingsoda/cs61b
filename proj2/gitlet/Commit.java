@@ -2,15 +2,9 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import java.io.File;
 import java.io.Serializable;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date; // TODO: You'll likely use this in this class
-import java.util.Set;
-import java.util.TreeMap;
-
-import static gitlet.Utils.*;
+import java.util.*;
 
 
 /** Represents a gitlet commit object.
@@ -33,21 +27,22 @@ public class Commit implements Serializable {
     /** The parent of current commit, representing by SHA-1 code. */
     private String parent;
     /** Time data*/
-    private String timeStamp;
+    private Date timeStamp;
     private TreeMap<String, String> content;
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
 
     /* TODO: fill in the rest of this class. */
     public Commit(String message, Commit parent, Date timeStamp, TreeMap<String, String> content) {
         this.message = message;
         this.parent = MainHelper.objToSHA1(parent);
-        this.timeStamp = MainHelper.dateToString(timeStamp);
+        this.timeStamp = timeStamp;
         this.content = content;
     }
 
     public Commit() {
         message = "initial commit";
         parent = null;
-        timeStamp = MainHelper.dateToString(new Date(0));
+        timeStamp = new Date(0);
         content = new TreeMap<>();
     }
 
@@ -80,4 +75,15 @@ public class Commit implements Serializable {
         return new Commit(message, this, timeStamp, childContent);
     }
 
+    public String getParent() {
+        return parent;
+    }
+
+    @Override
+    public String toString() {
+        Commit.sdf.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+        String returnString = "Date: " + Commit.sdf.format(timeStamp);
+        returnString = returnString + "\n" + message;
+        return returnString;
+    }
 }
