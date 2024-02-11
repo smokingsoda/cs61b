@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static gitlet.Utils.join;
+
 public class Stage implements Serializable {
     private TreeMap<String, String> stageTree; //key: absolute path(Lower Case), value: content(as SHA1)
 
@@ -38,6 +40,17 @@ public class Stage implements Serializable {
 
     public void clearStageTree() {
         stageTree.clear();
+    }
+
+    public String getBlobContentSHA1(String path) {
+        if (containsFile(path)) {
+            String blobName = getFileSHA1(path);
+            File blobFile = join(MainHelper.blobs, blobName);
+            Blob targetBlob = (Blob) MainHelper.loadObject(blobFile, Blob.class);
+            return targetBlob.contentToSHA1();
+        } else {
+            return null;
+        }
     }
 
 }

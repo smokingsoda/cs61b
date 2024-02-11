@@ -37,11 +37,11 @@ public class test {
         Commit childCommit = (Commit)MainHelper.loadObject(join(commits, "6d6b7dade3f79a8d2bbe3e2cde917329de2fb964"), Commit.class);
     }
 
-    //@Test
+    @Test
     public void test3() {
         Stage addStage = (Stage) MainHelper.loadObject(addStageFile, Stage.class);
         Commit currentCommit = MainHelper.getHEADCommit();
-        File Hello = join(CWD, "Hello.txt");
+        //File Hello = join(CWD, "Hello.txt");
         //byte[] HelloByte = MainHelper.loadByte(Hello);
         //String SHA1 = sha1(HelloByte);
     }
@@ -54,10 +54,12 @@ public class test {
         Main.main(args2);
     }
 
-    @Test
+    //@Test
     public void test5() {
-        String[] args = {"add"};
-        Main.main(args);
+        String[] args1 = {"add", "f.txt"};
+        Main.main(args1);
+        String[] args2 = {"add", "g.txt"};
+        Main.main(args2);
     }
 
 }

@@ -74,7 +74,7 @@ public class MainHelper {
             String addingFilePath = addingFile.getAbsolutePath();
             Blob addBlob = new Blob(addingFilePath, loadByte(addingFile));
             //1.Create new blob
-            String addBlobName = addBlob.contentToSHA1();
+            String addBlobName = objToSHA1(addBlob);
             //2. Convert the blob's content into SHA1
             String currentCommitBlob = currentCommit.getBlob(addingFilePath);
             if (currentCommitBlob == null || !(currentCommitBlob.equals(addBlobName))) {
@@ -248,14 +248,14 @@ public class MainHelper {
             String fName = f.getName();
             if (f.exists()
                     && currentCommit.containsBlob(fAbsolutePath)
-                        && !fSHA1.equals(currentCommit.getBlob(fAbsolutePath))
+                        && !fSHA1.equals(currentCommit.getBlobContentSHA1(fAbsolutePath))
                             && ! addStage.containsFile(fAbsolutePath)) {
                 //Tracked in the current commit, changed in the working directory, but not staged;
                 modificationFileMap.put(fName, "modified");
                 continue;
             } else if (f.exists()
                         && addStage.containsFile(fAbsolutePath)
-                            && !fSHA1.equals(addStage.getFileSHA1(fAbsolutePath))) {
+                            && !fSHA1.equals(addStage.getBlobContentSHA1(fAbsolutePath))) {
                 //Staged for addition, but with different contents than in the working directory;
                 modificationFileMap.put(fName, "modified");
                 continue;
@@ -264,7 +264,8 @@ public class MainHelper {
                 modificationFileMap.put(fName, "deleted");
                 continue;
             } else if (!removeStage.containsFile(fAbsolutePath)
-                    && currentCommit.containsBlob(fAbsolutePath) && ! f.exists()) {
+                        && currentCommit.containsBlob(fAbsolutePath)
+                            && ! f.exists()) {
                 //Not staged for removal, but tracked in the current commit and deleted from the working directory.
                 modificationFileMap.put(fName, "deleted");
             } else if (addStage.containsFile(fAbsolutePath)) {

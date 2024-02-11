@@ -84,7 +84,7 @@ public class Commit implements Serializable {
     }
 
     public void retrieveFile(String path) {
-        String retrieveBlobName = getBlob(path);
+        String retrieveBlobName = getBlob(path.toLowerCase());
         if (retrieveBlobName == null) {
             System.out.println("File does not exist in that commit.");
             System.exit(0);
@@ -92,7 +92,7 @@ public class Commit implements Serializable {
         }
         File retrieveBlobFile = join(MainHelper.blobs, retrieveBlobName);
         Blob retrieveBlob = (Blob) MainHelper.loadObject(retrieveBlobFile, Blob.class);
-        File retrieveFile = new File(retrieveBlob.getPath());
+        File retrieveFile = new File(path);
         byte[] retrieveFileContent = retrieveBlob.getContent();
         writeContents(retrieveFile, retrieveFileContent);
     }
@@ -107,5 +107,16 @@ public class Commit implements Serializable {
         String returnString = "Date: " + Commit.sdf.format(timeStamp);
         returnString = returnString + "\n" + message;
         return returnString;
+    }
+
+    public String getBlobContentSHA1(String path) {
+        if (containsBlob(path)) {
+            String blobName = getBlob(path);
+            File blobFile = join(MainHelper.blobs, blobName);
+            Blob targetBlob = (Blob) MainHelper.loadObject(blobFile, Blob.class);
+            return targetBlob.contentToSHA1();
+        } else {
+            return null;
+        }
     }
 }

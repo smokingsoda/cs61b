@@ -18,11 +18,11 @@ public class Blob implements Serializable {
     }
 
     public byte[] getContent() {
-        return this.content;
+        return content;
     }
 
     public String getPath() {
-        return this.path;
+        return path;
     }
 
     public String contentToSHA1() {
