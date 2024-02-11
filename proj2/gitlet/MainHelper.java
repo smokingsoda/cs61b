@@ -305,21 +305,33 @@ public class MainHelper {
             System.out.println("Not a valid gitlet repository");
             System.exit(0);
         }
-        File[] branchesFile = branches.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isFile();
-            }
-        });// Determine whether it is a file
-        for(File b : branchesFile) {
-            if (b.getName().equals(branchName)) {
-                System.out.println("A branch with that name already exists.");
-                System.exit(0);
-                return;
+        File newBranchFile = join(branches, branchName);
+        if (newBranchFile.exists()) {
+            System.out.println("A branch with that name already exists.");
+            System.exit(0);
+        } else {
+            Commit currentCommit = getHEADCommit();
+            updateBranch(currentCommit, branchName);
+        }
+    }
+
+    public static void rmBranch(String branchName) {
+        if (!validateGitlet()) {
+            System.out.println("Not a valid gitlet repository");
+            System.exit(0);
+        }
+        File removeBranchFile = join(branches, branchName);
+        if (!removeBranchFile.exists()) {
+            System.out.println("A branch with that name does not exist.");
+            System.exit(0);
+        } else {
+            String headBranch = getHEADBranch();
+            if (headBranch.equals(branchName)) {
+                System.out.println("Cannot remove the current branch.");
+            } else {
+                removeBranchFile.delete();
             }
         }
-        Commit currentCommit = getHEADCommit();
-        updateBranch(currentCommit, branchName);
     }
 
     /**

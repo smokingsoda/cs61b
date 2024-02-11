@@ -52,10 +52,17 @@ public class Main {
                 //TODO: handle the "status" command
                 validateNumArgs("status", args, 1);
                 MainHelper.status();
+                break;
             case "branch":
                 //TODO: handle the "branch [branch name]" command
                 validateNumArgs("branch", args, 2);
                 MainHelper.branch(args[1]);
+                break;
+            case "rm-branch":
+                //TODO: handle the "rm-branch [branch name]" command
+                validateNumArgs("rm-branch", args, 2);
+                MainHelper.rmBranch(args[1]);
+                break;
         }
     }
 
