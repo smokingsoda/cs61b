@@ -552,6 +552,29 @@ public class MainHelper {
             currentCommit.removeBlob(path);
         }
     }
+    public static Commit getCommit(String commitSHA1) {
+        File commitFolder;
+        File commitFile;
+        if (commitSHA1.length() == 40) {
+            commitFolder = join(commits, commitSHA1.substring(0,6));
+            commitFile = join(commitFolder, commitSHA1);
+        } else if (commitSHA1.length() == 6) {
+            commitFolder = join(commits, commitSHA1);
+            File[] files = commitFolder.listFiles();
+            if (files.length == 1) {
+                commitFile = files[0];
+            } else {
+                System.out.println("Please specify the Commit ID");
+                System.exit(0);
+                return null;
+            }
+        } else {
+            System.out.println("Wrong commit ID format");
+            System.exit(0);
+            return null;
+        }
+        return (Commit) loadObject(commitFile, Commit.class);
+    }
 
     /**
      * ===== HEAD Related Functions =====
