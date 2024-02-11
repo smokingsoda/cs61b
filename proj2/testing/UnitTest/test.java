@@ -46,12 +46,18 @@ public class test {
         //String SHA1 = sha1(HelloByte);
     }
 
-    @Test
+    //@Test
     public void test4() {
         String[] args1 = {"add", "Hello.txt"};
         String[] args2 = {"rm", "Hello.txt"};
         Main.main(args1);
         Main.main(args2);
+    }
+
+    @Test
+    public void test5() {
+        String[] args = {"add"};
+        Main.main(args);
     }
 
 }

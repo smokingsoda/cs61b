@@ -4,7 +4,11 @@ package gitlet;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.io.File;
 import java.util.*;
+
+import static gitlet.Utils.join;
+import static gitlet.Utils.writeContents;
 
 
 /** Represents a gitlet commit object.
@@ -29,7 +33,7 @@ public class Commit implements Serializable {
     /** Time data*/
     private Date timeStamp;
     private TreeMap<String, String> content;
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z");
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.US);
 
     /* TODO: fill in the rest of this class. */
     public Commit(String message, Commit parent, Date timeStamp, TreeMap<String, String> content) {
@@ -77,6 +81,20 @@ public class Commit implements Serializable {
 
     public String getParent() {
         return parent;
+    }
+
+    public void retrieveFile(String path) {
+        String retrieveBlobName = getBlob(path);
+        if (retrieveBlobName == null) {
+            System.out.println("File does not exist in that commit.");
+            System.exit(0);
+            return;
+        }
+        File retrieveBlobFile = join(MainHelper.blobs, retrieveBlobName);
+        Blob retrieveBlob = (Blob) MainHelper.loadObject(retrieveBlobFile, Blob.class);
+        File retrieveFile = new File(retrieveBlob.getPath());
+        byte[] retrieveFileContent = retrieveBlob.getContent();
+        writeContents(retrieveFile, retrieveFileContent);
     }
 
     @Override

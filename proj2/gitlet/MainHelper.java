@@ -334,6 +334,23 @@ public class MainHelper {
         }
     }
 
+    public static void checkoutFileName(String fileName) {
+        Commit currentCommit = getHEADCommit();
+        File file = join(CWD, fileName);
+        currentCommit.retrieveFile(file.getAbsolutePath());
+    }
+
+    public static void checkoutCommitFileName(String commitSHA1, String fileName) {
+        File targetCommitFile = join(commits, commitSHA1);
+        File file = join(CWD, fileName);
+        if (! targetCommitFile.exists()) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        Commit targetCommit = (Commit) loadObject(targetCommitFile, Commit.class);
+        targetCommit.retrieveFile(file.getAbsolutePath());
+    }
+
     /**
      * ===== Object Persistence Functions =====
      */

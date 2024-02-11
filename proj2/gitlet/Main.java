@@ -63,6 +63,21 @@ public class Main {
                 validateNumArgs("rm-branch", args, 2);
                 MainHelper.rmBranch(args[1]);
                 break;
+            case "checkout":
+                switch (args.length) {
+                    case 3:
+                        //TODO: handle the "checkout -- [file name]"
+                        validateNumArgs("checkout", args, 3);
+                        validateOperand("--", args[1]);
+                        MainHelper.checkoutFileName(args[2]);
+                        break;
+                    case 4 :
+                        //TODO: handle the "checkout [commit ID] -- [file name]" command
+                        validateNumArgs("checkout", args, 4);
+                        validateOperand("--", args[2]);
+                        MainHelper.checkoutCommitFileName(args[1], args[3]);
+                        break;
+                }
         }
     }
 
@@ -74,8 +89,14 @@ public class Main {
                         System.out.println("Please enter a commit message. ");
                         break;
                     }
-
             }
+            System.out.println("Incorrect operands.");
+            System.exit(0);
+        }
+    }
+
+    public static void validateOperand(String expectedOperand, String actualOperand) {
+        if (! expectedOperand.equals(actualOperand)) {
             System.out.println("Incorrect operands.");
             System.exit(0);
         }
