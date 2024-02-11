@@ -351,6 +351,38 @@ public class MainHelper {
         targetCommit.retrieveFile(file.getAbsolutePath());
     }
 
+    public static void checkoutBranchName(String branchName) {
+        File targetBranchFile = join(branches, branchName);
+        if (! targetBranchFile.exists()) {
+            System.out.println("No such branch exists.");
+            System.exit(0);
+        } else if (branchName.toLowerCase().equals(getHEADBranch())) {
+            System.out.println("No need to checkout the current branch.");
+            System.exit(0);
+        }
+        String targetCommitSHA1 = getBranchCommitName(branchName);
+        File targetCommitFile = join(commits, targetCommitSHA1);
+        Commit targetCommit = (Commit) loadObject(targetCommitFile, Commit.class);
+        Commit currentCommit = getHEADCommit();
+        Set targetCommitContentSet = targetCommit.contentKeySet();
+        for (Object fPath : targetCommitContentSet) {
+            String targetFContent = targetCommit.getBlob((String)fPath);
+            File f = new File((String) fPath);
+            String currentFContent = loadFileToSHA1(f);
+            if (f.exists()
+                    && ! currentCommit.containsBlob((String)fPath)
+                        && ! targetFContent.equals(currentFContent)) {
+                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.exit(0);
+                return;
+            }
+        }
+        for (Object fPath : targetCommitContentSet) {
+            targetCommit.retrieveFile((String)fPath);
+        }
+        updateHEAD(branchName);
+    }
+
     /**
      * ===== Object Persistence Functions =====
      */

@@ -97,6 +97,10 @@ public class Commit implements Serializable {
         writeContents(retrieveFile, retrieveFileContent);
     }
 
+    public Set<String> contentKeySet() {
+        return content.keySet();
+    }
+
     @Override
     public String toString() {
         Commit.sdf.setTimeZone(TimeZone.getTimeZone("GMT+8"));

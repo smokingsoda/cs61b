@@ -71,12 +71,16 @@ public class Main {
                         validateOperand("--", args[1]);
                         MainHelper.checkoutFileName(args[2]);
                         break;
-                    case 4 :
+                    case 4:
                         //TODO: handle the "checkout [commit ID] -- [file name]" command
                         validateNumArgs("checkout", args, 4);
                         validateOperand("--", args[2]);
                         MainHelper.checkoutCommitFileName(args[1], args[3]);
                         break;
+                    case 2:
+                        //TODO: handle the "checkout [branch name]" command
+                        validateNumArgs("checkout", args, 2);
+                        MainHelper.checkoutBranchName(args[1]);
                 }
         }
     }
