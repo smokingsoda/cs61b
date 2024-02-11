@@ -45,7 +45,7 @@ public class Stage implements Serializable {
     public String getBlobContentSHA1(String path) {
         if (containsFile(path)) {
             String blobName = getFileSHA1(path);
-            File blobFile = join(MainHelper.blobs, blobName);
+            File blobFile = join(MainHelper.stagingAreaBlobs, blobName);
             Blob targetBlob = (Blob) MainHelper.loadObject(blobFile, Blob.class);
             return targetBlob.contentToSHA1();
         } else {
