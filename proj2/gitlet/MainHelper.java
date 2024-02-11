@@ -300,6 +300,28 @@ public class MainHelper {
         System.out.println();
     }
 
+    public static void branch(String branchName) {
+        if (!validateGitlet()) {
+            System.out.println("Not a valid gitlet repository");
+            System.exit(0);
+        }
+        File[] branchesFile = branches.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isFile();
+            }
+        });// Determine whether it is a file
+        for(File b : branchesFile) {
+            if (b.getName().equals(branchName)) {
+                System.out.println("A branch with that name already exists.");
+                System.exit(0);
+                return;
+            }
+        }
+        Commit currentCommit = getHEADCommit();
+        updateBranch(currentCommit, branchName);
+    }
+
     /**
      * ===== Object Persistence Functions =====
      */

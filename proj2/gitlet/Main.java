@@ -49,9 +49,13 @@ public class Main {
                 MainHelper.log();
                 break;
             case "status":
-                //TODO : handle the "status" command
+                //TODO: handle the "status" command
                 validateNumArgs("status", args, 1);
                 MainHelper.status();
+            case "branch":
+                //TODO: handle the "branch [branch name]" command
+                validateNumArgs("branch", args, 2);
+                MainHelper.branch(args[1]);
         }
     }
 
