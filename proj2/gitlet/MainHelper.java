@@ -70,6 +70,7 @@ public class MainHelper {
         if (addingFile.exists()) {
             Commit currentCommit = getHEADCommit();
             Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
+            Stage removeStageArea = (Stage) loadObject(removeStageFile, Stage.class);
             String addingFilePath = addingFile.getAbsolutePath();
             Blob addBlob = new Blob(addingFilePath, loadByte(addingFile));
             //1.Create new blob
@@ -87,7 +88,9 @@ public class MainHelper {
             else {
                 addStageArea.removeFile(addingFilePath);
             }
+            removeStageArea.removeFile(addingFilePath);
             saveFile(addStageArea, addStageFile);
+            saveFile(removeStageArea, removeStageFile);
             //6. Save the addStageArea
         } else {
             System.out.println("File does not exist.");
@@ -142,7 +145,7 @@ public class MainHelper {
             if (addStageAreaContains) {
                 addStageArea.removeFile(removingFilePath);
             }
-            if (currentCommitContains) {
+            if (currentCommitContains && removingFile.exists()) {
                 removeStageArea.putFile(removingFilePath, "dummy SHA1");
                 restrictedDelete(removingFilePath);
             }
@@ -392,7 +395,7 @@ public class MainHelper {
             String currentFContent = loadFileToSHA1(f);
             if (f.exists()
                     && ! currentCommit.containsBlob((String)fPath)
-                    && ! targetFContent.equals(currentFContent)) {
+                        && ! targetFContent.equals(currentFContent)) {
                 System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                 System.exit(0);
                 return;
@@ -406,9 +409,15 @@ public class MainHelper {
             }
         }
         for (Object fPath : targetCommitContentSet) {
-
             targetCommit.retrieveFile((String)fPath);
         }
+        Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
+        Stage removeStageArea = (Stage) loadObject(removeStageFile, Stage.class);
+        clearStagingAreaBlobs();
+        addStageArea.clearStageTree();
+        removeStageArea.clearStageTree();
+        saveFile(addStageArea, addStageFile);
+        saveFile(removeStageArea, addStageFile);
     }
 
     public static void reset(String commitSHA1) {
