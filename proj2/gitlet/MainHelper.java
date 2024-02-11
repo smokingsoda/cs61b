@@ -145,7 +145,7 @@ public class MainHelper {
             if (addStageAreaContains) {
                 addStageArea.removeFile(removingFilePath);
             }
-            if (currentCommitContains && removingFile.exists()) {
+            if (currentCommitContains) {
                 removeStageArea.putFile(removingFilePath, "dummy SHA1");
                 restrictedDelete(removingFilePath);
             }
