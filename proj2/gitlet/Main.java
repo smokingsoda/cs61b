@@ -81,7 +81,13 @@ public class Main {
                         //TODO: handle the "checkout [branch name]" command
                         validateNumArgs("checkout", args, 2);
                         MainHelper.checkoutBranchName(args[1]);
+                        break;
                 }
+                break;
+            case "reset":
+                validateNumArgs("reset", args, 2);
+                MainHelper.reset(args[1]);
+                break;
         }
     }
 

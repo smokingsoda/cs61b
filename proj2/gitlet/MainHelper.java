@@ -361,6 +361,13 @@ public class MainHelper {
             System.exit(0);
         }
         String targetCommitSHA1 = getBranchCommitName(branchName);
+        ///
+        checkoutCommitSHA1(targetCommitSHA1);///////
+        ///
+        updateHEAD(branchName);
+    }
+
+    public static void checkoutCommitSHA1(String targetCommitSHA1) {
         File targetCommitFile = join(commits, targetCommitSHA1);
         Commit targetCommit = (Commit) loadObject(targetCommitFile, Commit.class);
         Commit currentCommit = getHEADCommit();
@@ -371,7 +378,7 @@ public class MainHelper {
             String currentFContent = loadFileToSHA1(f);
             if (f.exists()
                     && ! currentCommit.containsBlob((String)fPath)
-                        && ! targetFContent.equals(currentFContent)) {
+                    && ! targetFContent.equals(currentFContent)) {
                 System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                 System.exit(0);
                 return;
@@ -380,7 +387,15 @@ public class MainHelper {
         for (Object fPath : targetCommitContentSet) {
             targetCommit.retrieveFile((String)fPath);
         }
-        updateHEAD(branchName);
+    }
+
+    public static void reset(String commitSHA1) {
+        File commitFile = join(commits, commitSHA1);
+        if (! commitFile.exists()) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
+        checkoutCommitSHA1(commitSHA1);
     }
 
     /**
