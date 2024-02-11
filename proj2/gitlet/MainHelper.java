@@ -169,9 +169,7 @@ public class MainHelper {
     }
 
     public static void recursiveLog(String childCommitName) {
-        File childCommitFolder = join(commits, childCommitName.substring(0,6));
-        File childCommitFile = join(childCommitFolder, childCommitName);
-        Commit childCommit = (Commit) loadObject(childCommitFile, Commit.class);
+        Commit childCommit = getCommit(childCommitName);
         String parentCommitName = childCommit.getParent();
         System.out.println("===");
         System.out.println("commit " + childCommitName);
@@ -355,22 +353,8 @@ public class MainHelper {
     }
 
     public static void checkoutCommitFileName(String commitSHA1, String fileName) {
+        Commit targetCommit = getCommit(commitSHA1);
         File file = join(CWD, fileName);
-        File targetCommitFile;
-        File targetCommitFolder;
-        if (commitSHA1.length() == 40) {
-            targetCommitFolder = join(commits, commitSHA1.substring(0,6));
-        } else if (commitSHA1.length() == 6) {
-            targetCommitFolder = join(commits, commitSHA1);
-        } else {
-            targetCommitFolder = new File("");
-        }
-        targetCommitFile = join(targetCommitFolder, commitSHA1);
-        if (! targetCommitFile.exists()) {
-            System.out.println("No commit with that id exists.");
-            System.exit(0);
-        }
-        Commit targetCommit = (Commit) loadObject(targetCommitFile, Commit.class);
         targetCommit.retrieveFile(file.getAbsolutePath());
     }
 
@@ -391,25 +375,7 @@ public class MainHelper {
     }
 
     public static void checkoutCommitSHA1(String targetCommitSHA1) {
-        File targetCommitFolder = join(commits, targetCommitSHA1.substring(0,6));
-        File targetCommitFile;
-        if (targetCommitSHA1.length() == 40) {
-            targetCommitFile = join(targetCommitFolder, targetCommitSHA1);
-        } else if (targetCommitSHA1.length() == 6) {
-            File[] files = targetCommitFolder.listFiles();
-            if (files.length == 1) {
-                targetCommitFile = files[0];
-            } else {
-                System.out.println("Can't find the commit with short ID");
-                System.exit(0);
-                return;
-            }
-        } else {
-            System.out.println("Please enter the correct commit ID");
-            System.exit(0);
-            return;
-        }
-        Commit targetCommit = (Commit) loadObject(targetCommitFile, Commit.class);
+        Commit targetCommit = getCommit(targetCommitSHA1);
         Commit currentCommit = getHEADCommit();
         File[] CWDFiles = CWD.listFiles(new FileFilter() {
             @Override
@@ -450,24 +416,9 @@ public class MainHelper {
     }
 
     public static void reset(String commitSHA1) {
-        File commitFolder;
-        if (commitSHA1.length() == 40) {
-            commitFolder = join(commits, commitSHA1.substring(0,6));
-        } else if (commitSHA1.length() == 6) {
-            commitFolder = join(commits, commitSHA1);
-        } else {
-            System.out.println("Wrong commit ID");
-            System.exit(0);
-            return;
-        }
-        File commitFile = join(commitFolder, commitSHA1);
-        if (! commitFile.exists()) {
-            System.out.println("No commit with that id exists.");
-            System.exit(0);
-        }
         checkoutCommitSHA1(commitSHA1);
         String currentBranch = getHEADBranch();
-        Commit currentCommit = (Commit) loadObject(commitFile, Commit.class);
+        Commit currentCommit = getCommit(commitSHA1);
         updateBranch(currentCommit, currentBranch);
     }
 
@@ -526,7 +477,9 @@ public class MainHelper {
             saveAsName(obj, folder, fileName);
         } else if (length == 6) {
             File abbreFolder = join(folder, fileName.substring(0,6));
-            abbreFolder.mkdir();
+            if (!abbreFolder.exists()) {
+                abbreFolder.mkdir();
+            }
             saveAsName(obj, abbreFolder, fileName);
         }
 
@@ -553,28 +506,56 @@ public class MainHelper {
         }
     }
     public static Commit getCommit(String commitSHA1) {
-        File commitFolder;
-        File commitFile;
-        if (commitSHA1.length() == 40) {
-            commitFolder = join(commits, commitSHA1.substring(0,6));
-            commitFile = join(commitFolder, commitSHA1);
-        } else if (commitSHA1.length() == 6) {
-            commitFolder = join(commits, commitSHA1);
-            File[] files = commitFolder.listFiles();
-            if (files.length == 1) {
-                commitFile = files[0];
-            } else {
-                System.out.println("Please specify the Commit ID");
-                System.exit(0);
-                return null;
+        File commitFile = null;
+        if (commitSHA1.length() == 0) {
+            System.out.println("Too short");
+            System.exit(0);
+            return null;
+        } else if (commitSHA1.length() <= 6) {
+            File[] folders = commits.listFiles();
+            for (File folder : folders) {
+                if (commitSHA1.equals(folder.getName().substring(0, commitSHA1.length()))) {
+                    File[] files = folder.listFiles();
+                    if (files.length == 1) {
+                        commitFile = files[0];
+                        break;
+                    } else {
+                        System.out.println("Too short 2");
+                        System.exit(0);
+                        return null;
+                    }
+                }
+            }
+        } else if (commitSHA1.length() <= 40) {
+            File[] folders = commits.listFiles();
+            for (File folder : folders) {
+                if (commitSHA1.substring(0,6).equals(folder.getName())) {
+                    File[] files = folder.listFiles();
+                    if (files.length == 1) {
+                        commitFile = files[0];
+                        break;
+                    } else {
+                        System.out.println("Too short 2");
+                        System.exit(0);
+                        return null;
+                    }
+                }
             }
         } else {
-            System.out.println("Wrong commit ID format");
+            System.out.println("too long");
             System.exit(0);
             return null;
         }
-        return (Commit) loadObject(commitFile, Commit.class);
+        if (commitFile == null) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+            return null;
+        }else {
+            Commit returnCommit = (Commit) loadObject(commitFile, Commit.class);
+            return returnCommit;
+        }
     }
+
 
     /**
      * ===== HEAD Related Functions =====
