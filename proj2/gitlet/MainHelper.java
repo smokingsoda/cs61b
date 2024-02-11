@@ -100,6 +100,10 @@ public class MainHelper {
             System.out.println("Not a valid gitlet repository");
             System.exit(0);
         }
+        if (message.equals("")) {
+            System.out.println("Please enter a commit message.");
+            System.exit(0);
+        }
         Commit parentCommit = getHEADCommit();//1.Get the current Commit
         String currentBranch = getHEADBranch();
         Commit childCommit = parentCommit.createChildCommit(message, timeStamp);//2.Create a brand-new Commit(everything is different)
@@ -189,6 +193,7 @@ public class MainHelper {
         Set<String> removeStageFileSet = removeStage.stageTreeKeySet();
         Set<String> stagedFilesSet = new TreeSet();
         Set<String> removedFilesSet = new TreeSet<>();
+        Set<String> currentCommitFileSet = currentCommit.contentKeySet();
         TreeSet<String> branchesSet = new TreeSet<>();
         TreeSet<String> allFile = new TreeSet<>();
         /**
@@ -221,7 +226,10 @@ public class MainHelper {
         for (File f : CWDFile) {
             allFile.add(f.getAbsolutePath().toLowerCase());
         }
-
+        //current commit files
+        for(String fAbsolutePath : currentCommitFileSet) {
+            allFile.add(fAbsolutePath.toLowerCase());
+        }
         //addStage files
         for (String fAbsolutePath : addStageFileSet) {
             allFile.add(fAbsolutePath.toLowerCase());
@@ -371,6 +379,12 @@ public class MainHelper {
         File targetCommitFile = join(commits, targetCommitSHA1);
         Commit targetCommit = (Commit) loadObject(targetCommitFile, Commit.class);
         Commit currentCommit = getHEADCommit();
+        File[] CWDFiles = CWD.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isFile();
+            }
+        });
         Set targetCommitContentSet = targetCommit.contentKeySet();
         for (Object fPath : targetCommitContentSet) {
             String targetFContent = targetCommit.getBlob((String)fPath);
@@ -384,7 +398,15 @@ public class MainHelper {
                 return;
             }
         }
+        for (File f : CWDFiles) {
+            String fPath = f.getAbsolutePath();
+            if (currentCommit.containsBlob(fPath)
+                    && !targetCommit.containsBlob(fPath)) {
+                f.delete();
+            }
+        }
         for (Object fPath : targetCommitContentSet) {
+
             targetCommit.retrieveFile((String)fPath);
         }
     }
