@@ -169,7 +169,8 @@ public class MainHelper {
     }
 
     public static void recursiveLog(String childCommitName) {
-        File childCommitFile = join(commits, childCommitName);
+        File childCommitFolder = join(commits, childCommitName.substring(0,6));
+        File childCommitFile = join(childCommitFolder, childCommitName);
         Commit childCommit = (Commit) loadObject(childCommitFile, Commit.class);
         String parentCommitName = childCommit.getParent();
         System.out.println("===");
@@ -390,7 +391,24 @@ public class MainHelper {
     }
 
     public static void checkoutCommitSHA1(String targetCommitSHA1) {
-        File targetCommitFile = join(commits, targetCommitSHA1);
+        File targetCommitFolder = join(commits, targetCommitSHA1.substring(0,6));
+        File targetCommitFile;
+        if (targetCommitSHA1.length() == 40) {
+            targetCommitFile = join(targetCommitFolder, targetCommitSHA1);
+        } else if (targetCommitSHA1.length() == 6) {
+            File[] files = targetCommitFolder.listFiles();
+            if (files.length == 1) {
+                targetCommitFile = files[0];
+            } else {
+                System.out.println("Can't find the commit with short ID");
+                System.exit(0);
+                return;
+            }
+        } else {
+            System.out.println("Please enter the correct commit ID");
+            System.exit(0);
+            return;
+        }
         Commit targetCommit = (Commit) loadObject(targetCommitFile, Commit.class);
         Commit currentCommit = getHEADCommit();
         File[] CWDFiles = CWD.listFiles(new FileFilter() {
@@ -432,7 +450,17 @@ public class MainHelper {
     }
 
     public static void reset(String commitSHA1) {
-        File commitFile = join(commits, commitSHA1);
+        File commitFolder;
+        if (commitSHA1.length() == 40) {
+            commitFolder = join(commits, commitSHA1.substring(0,6));
+        } else if (commitSHA1.length() == 6) {
+            commitFolder = join(commits, commitSHA1);
+        } else {
+            System.out.println("Wrong commit ID");
+            System.exit(0);
+            return;
+        }
+        File commitFile = join(commitFolder, commitSHA1);
         if (! commitFile.exists()) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
@@ -541,7 +569,8 @@ public class MainHelper {
     public static Commit getHEADCommit() {
         String targetBranch = loadString(HEAD);
         String targetCommitSHA1 = loadString(join(branches, targetBranch));
-        File targetCommitFile = join(commits, targetCommitSHA1);
+        File targetCommitFolder = join(commits, targetCommitSHA1.substring(0,6));
+        File targetCommitFile = join(targetCommitFolder, targetCommitSHA1);
         return (Commit) loadObject(targetCommitFile, Commit.class);
     }
 
