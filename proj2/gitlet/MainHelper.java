@@ -28,6 +28,7 @@ public class MainHelper {
     /**
      * .gitlet
      *      -commits
+     *          -six-number shorten id
      *      -blobs
      *      -stagingArea
      *          -addStage(obj)
@@ -50,7 +51,7 @@ public class MainHelper {
             Stage addStage = new Stage();
             Stage removeStage = new Stage();
             Commit currentCommit = new Commit();
-            saveAsSHA1(currentCommit, commits);
+            saveAsSHA1(currentCommit, commits, 6);
             saveFile(addStage, addStageFile);
             saveFile(removeStage, removeStageFile);
             updateBranch(currentCommit, "master");
@@ -118,7 +119,7 @@ public class MainHelper {
         } else {
             addToCommit(addStage, childCommit);//3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
             removeFromCommit(removeStage, childCommit);
-            saveAsSHA1(childCommit, commits);//4.Save childCommit
+            saveAsSHA1(childCommit, commits, 6);//4.Save childCommit
             updateBranch(childCommit, currentBranch);
             updateHEAD(currentBranch); // Upadate Head
             addStage.clearStageTree();//5.Clear stage
@@ -353,8 +354,17 @@ public class MainHelper {
     }
 
     public static void checkoutCommitFileName(String commitSHA1, String fileName) {
-        File targetCommitFile = join(commits, commitSHA1);
         File file = join(CWD, fileName);
+        File targetCommitFile;
+        File targetCommitFolder;
+        if (commitSHA1.length() == 40) {
+            targetCommitFolder = join(commits, commitSHA1.substring(0,6));
+        } else if (commitSHA1.length() == 6) {
+            targetCommitFolder = join(commits, commitSHA1);
+        } else {
+            targetCommitFolder = new File("");
+        }
+        targetCommitFile = join(targetCommitFolder, commitSHA1);
         if (! targetCommitFile.exists()) {
             System.out.println("No commit with that id exists.");
             System.exit(0);
@@ -428,6 +438,9 @@ public class MainHelper {
             System.exit(0);
         }
         checkoutCommitSHA1(commitSHA1);
+        String currentBranch = getHEADBranch();
+        Commit currentCommit = (Commit) loadObject(commitFile, Commit.class);
+        updateBranch(currentCommit, currentBranch);
     }
 
     /**
@@ -479,9 +492,16 @@ public class MainHelper {
         }
     }
     //TODO: Maybe I want to remove this method?
-    public static void saveAsSHA1(Serializable obj, File folder) {
+    public static void saveAsSHA1(Serializable obj, File folder, int length) {
         String fileName = objToSHA1(obj);
-        saveAsName(obj, folder, fileName);
+        if (length == 40) {
+            saveAsName(obj, folder, fileName);
+        } else if (length == 6) {
+            File abbreFolder = join(folder, fileName.substring(0,6));
+            abbreFolder.mkdir();
+            saveAsName(obj, abbreFolder, fileName);
+        }
+
     }
 
 
