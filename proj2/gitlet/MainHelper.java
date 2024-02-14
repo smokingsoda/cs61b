@@ -425,7 +425,7 @@ public class MainHelper {
             Commit commit = (Commit) loadObject(comFile, Commit.class);
             System.out.println("===");
             System.out.println("commit " + comFile.getName());
-            System.out.println(comFile);
+            System.out.println(commit);
             System.out.println();
         }
 
@@ -433,17 +433,17 @@ public class MainHelper {
 
     public static void find(String keyWords) {
         String[] keyWord = keyWords.split(" ");
+        Set<File> commitSet = getCommitSet();
+        Set<String> commitNamePrinted = new HashSet<>();
         for (String w : keyWord) {
-            Set<File> commitSet = getCommitSet();
             for (File comFile : commitSet) {
                 Commit commit = (Commit) loadObject(comFile, Commit.class);
                 String[] arr = commit.getMessage().split(" ");
-                HashSet<String> wordSet = new HashSet<>();
                 for (String word : arr) {
-                    wordSet.add(word);
-                }
-                if (wordSet.contains(w)) {
-                    System.out.println(comFile.getName());
+                    if (word.equals(w.toLowerCase()) && !commitNamePrinted.contains(comFile.getName())) {
+                        System.out.println(comFile.getName());
+                        commitNamePrinted.add(comFile.getName());
+                    }
                 }
             }
         }

@@ -92,6 +92,10 @@ public class Main {
                 validateNumArgs("global-log", args, 1);
                 MainHelper.globalLog();
                 break;
+            case "find":
+                validateNumArgs("find", args, 2);
+                MainHelper.find(args[1]);
+                break;
         }
     }
 
