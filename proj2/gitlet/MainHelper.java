@@ -5,10 +5,7 @@ import java.io.FileFilter;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -422,6 +419,46 @@ public class MainHelper {
         updateBranch(currentCommit, currentBranch);
     }
 
+    public static void globalLog() {
+        Set<File> commitSet = getCommitSet();
+        for (File comFile : commitSet) {
+            Commit commit = (Commit) loadObject(comFile, Commit.class);
+            System.out.println("===");
+            System.out.println("commit " + comFile.getName());
+            System.out.println(comFile);
+            System.out.println();
+        }
+
+    }
+
+    public static void find(String keyWords) {
+        String[] keyWord = keyWords.split(" ");
+        for (String w : keyWord) {
+            Set<File> commitSet = getCommitSet();
+            for (File comFile : commitSet) {
+                Commit commit = (Commit) loadObject(comFile, Commit.class);
+                String[] arr = commit.getMessage().split(" ");
+                HashSet<String> wordSet = new HashSet<>();
+                for (String word : arr) {
+                    wordSet.add(word);
+                }
+                if (wordSet.contains(w)) {
+                    System.out.println(comFile.getName());
+                }
+            }
+        }
+    }
+    public static Set<File> getCommitSet() {
+        File[] commitFolders = commits.listFiles();
+        Set<File> commitSet = new HashSet<>();
+        for (File CF : commitFolders) {
+            File[] coms = CF.listFiles();
+            for (File com : coms) {
+                commitSet.add(com);
+            }
+        }
+        return commitSet;
+    }
     /**
      * ===== Object Persistence Functions =====
      */

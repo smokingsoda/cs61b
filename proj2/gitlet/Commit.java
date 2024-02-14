@@ -119,4 +119,8 @@ public class Commit implements Serializable {
             return null;
         }
     }
+
+    public String getMessage() {
+        return message;
+    }
 }

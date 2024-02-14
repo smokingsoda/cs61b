@@ -88,6 +88,10 @@ public class Main {
                 validateNumArgs("reset", args, 2);
                 MainHelper.reset(args[1]);
                 break;
+            case "global-log":
+                validateNumArgs("global-log", args, 1);
+                MainHelper.globalLog();
+                break;
         }
     }
 
