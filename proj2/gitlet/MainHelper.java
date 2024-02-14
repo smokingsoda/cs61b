@@ -447,17 +447,57 @@ public class MainHelper {
                 }
             }
         }
+        if (commitNamePrinted.isEmpty()) {
+            System.out.println("Found no commit with that message.");
+            System.exit(0);
+        }
     }
-    public static Set<File> getCommitSet() {
-        File[] commitFolders = commits.listFiles();
-        Set<File> commitSet = new HashSet<>();
-        for (File CF : commitFolders) {
-            File[] coms = CF.listFiles();
-            for (File com : coms) {
-                commitSet.add(com);
+
+    public static void merge(String targetBranchName) {
+        String currentBranchName = getHEADBranch();
+        if (currentBranchName.equals(targetBranchName)) {
+            System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
+            return;
+        }
+        String targetCommitName = getBranchCommitName(targetBranchName);
+        String currentCommitName = getBranchCommitName(currentBranchName);
+        Commit targetCommit = getCommit(targetCommitName);
+        Commit currentCommit = getCommit(currentCommitName);
+        Set<String> targetCommitAncestorNameSet = getCommitAncestorNameSet(targetCommitName);
+        Set<String> currentCommitAncestorNameSet = getCommitAncestorNameSet(currentCommitName);
+        Set<String> commonAncestorNameSet = new HashSet<>();
+        String lastestCommonAncestorName;
+        for (String AncestorName : targetCommitAncestorNameSet) {
+            if (currentCommitAncestorNameSet.contains(AncestorName)) {
+                commonAncestorNameSet.add(AncestorName);
             }
         }
-        return commitSet;
+        for (String CAN : commonAncestorNameSet) {
+            Commit CA = getCommit(CAN);
+            if (!commonAncestorNameSet.contains(CA)) {
+
+            }
+
+        }
+    }
+
+    public static Set<String> getCommitAncestorNameSetRecursive(String childCommitName, Set<String> resultSet) {
+        resultSet.add(childCommitName);
+        Commit ChildCommit = getCommit(childCommitName);
+        String parentCommitName = ChildCommit.getParent();
+        if (parentCommitName == null) {
+            return resultSet;
+        } else {
+            return getCommitAncestorNameSetRecursive(parentCommitName, resultSet);
+        }
+
+    }
+    //Includes itself
+    public static Set<String> getCommitAncestorNameSet(String commitName) {
+        Set<String> nameSet = new HashSet<>();
+        getCommitAncestorNameSetRecursive(commitName, nameSet);
+        return nameSet;
     }
     /**
      * ===== Object Persistence Functions =====
@@ -468,7 +508,6 @@ public class MainHelper {
     public static void saveFile(Serializable obj, File file) {
         writeObject(file, obj);
     }
-
 
     /**
      * ===== Convert Object into SHA1 =====
@@ -484,6 +523,7 @@ public class MainHelper {
     public static byte[] loadByte(File file) {
         return readContents(file);
     }
+
     public static String loadString(File file) {
         return readContentsAsString(file);
     }
@@ -522,7 +562,6 @@ public class MainHelper {
 
     }
 
-
     /**
      * ===== Commit Related Functions =====
      */
@@ -535,6 +574,17 @@ public class MainHelper {
             blob.renameTo(join(blobs, blobName));
             currentCommit.putBlob(path, blobName);
         }
+    }
+    public static Set<File> getCommitSet() {
+        File[] commitFolders = commits.listFiles();
+        Set<File> commitSet = new HashSet<>();
+        for (File CF : commitFolders) {
+            File[] coms = CF.listFiles();
+            for (File com : coms) {
+                commitSet.add(com);
+            }
+        }
+        return commitSet;
     }
     public static void removeFromCommit(Stage removeStage, Commit currentCommit) {
         Set<String> removeStageKeySet = removeStage.stageTreeKeySet();

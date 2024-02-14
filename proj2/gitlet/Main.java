@@ -96,6 +96,9 @@ public class Main {
                 validateNumArgs("find", args, 2);
                 MainHelper.find(args[1]);
                 break;
+            case "merge":
+                validateNumArgs("merge", args, 2);
+                MainHelper.merge(args[1]);
         }
     }
 
