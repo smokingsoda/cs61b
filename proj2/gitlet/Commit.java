@@ -27,13 +27,13 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
-    private String message;
+    protected String message;
     /** The parent of current commit, representing by SHA-1 code. */
-    private String parent;
+    protected String parent;
     /** Time data*/
-    private Date timeStamp;
-    private TreeMap<String, String> content;
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.US);
+    protected Date timeStamp;
+    protected TreeMap<String, String> content;
+    protected static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.US);
 
     /* TODO: fill in the rest of this class. */
     public Commit(String message, Commit parent, Date timeStamp, TreeMap<String, String> content) {
@@ -124,4 +124,12 @@ public class Commit implements Serializable {
         return message;
     }
 
+    public mergedCommit createMergedChildCommit(Commit otherCommit, Date timeStamp) {
+        TreeMap<String, String> childContent = new TreeMap<>();
+        Set<String> parentContentSet = content.keySet();
+        for(String path : parentContentSet) {
+            childContent.put(path, content.get(path));
+        }//Copy the content
+        return new mergedCommit(this, otherCommit, timeStamp, childContent);
+    }
 }

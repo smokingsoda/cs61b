@@ -60,7 +60,7 @@ public class MainHelper {
     }
 
     public static void add(String fileName) {
-        if (! validateGitlet()) {
+        if (!validateGitlet()) {
             System.out.println("Not a valid gitlet repository");
             System.exit(0);
         }
@@ -118,7 +118,7 @@ public class MainHelper {
             removeFromCommit(removeStage, childCommit);
             saveAsSHA1(childCommit, commits, 6);//4.Save childCommit
             updateBranch(childCommit, currentBranch);
-            updateHEAD(currentBranch); // Upadate Head
+            updateHEAD(currentBranch); // Update Head
             addStage.clearStageTree();//5.Clear stage
             removeStage.clearStageTree();
             saveFile(addStage, addStageFile);//6.Save stage
@@ -462,26 +462,149 @@ public class MainHelper {
         }
         String targetCommitName = getBranchCommitName(targetBranchName);
         String currentCommitName = getBranchCommitName(currentBranchName);
-        Commit targetCommit = getCommit(targetCommitName);
-        Commit currentCommit = getCommit(currentCommitName);
-        Set<String> targetCommitAncestorNameSet = getCommitAncestorNameSet(targetCommitName);
-        Set<String> currentCommitAncestorNameSet = getCommitAncestorNameSet(currentCommitName);
-        Set<String> commonAncestorNameSet = new HashSet<>();
-        String lastestCommonAncestorName;
-        for (String AncestorName : targetCommitAncestorNameSet) {
-            if (currentCommitAncestorNameSet.contains(AncestorName)) {
-                commonAncestorNameSet.add(AncestorName);
+        String latestCommonCommitName = getLatestCommonAncestorName(targetCommitName, currentCommitName);
+        if (latestCommonCommitName.equals(targetCommitName)) {
+            System.out.println("Given branch is an ancestor of the current branch.");
+            System.exit(0);
+            return;
+        } else if (latestCommonCommitName.equals(currentCommitName)) {
+            checkoutCommitSHA1(targetCommitName);
+            System.out.println("Current branch fast-forwarded.");
+            System.exit(0);
+            //Perhaps I want to move the branch?
+            return;
+        } else {
+            Commit targetCommit = getCommit(targetCommitName);
+            Commit currentCommit = getCommit(currentCommitName);
+            Commit splitCommit = getCommit(latestCommonCommitName);
+            Date nowDate = new Date();
+            Commit newCommit = currentCommit.createMergedChildCommit(targetCommit, nowDate);
+            Set<String> allFilesPathSet = new HashSet<>();
+            allFilesPathSet = putCommitFilePathInSet(targetCommit, allFilesPathSet);
+            allFilesPathSet = putCommitFilePathInSet(currentCommit, allFilesPathSet);
+            allFilesPathSet = putCommitFilePathInSet(splitCommit, allFilesPathSet);
+            Map<String, String> targetCommitMap = targetCommit.getContent();
+            Map<String, String> currentCommitMap = currentCommit.getContent();
+            Map<String,String> splitCommitMap = splitCommit.getContent();
+            for (String fPath : allFilesPathSet) {
+                File f = new File(fPath);
+                String fName = f.getName();
+                String splitCommitFContent = splitCommitMap.get(fPath);
+                String currentCommitFContent = currentCommitMap.get(fPath);
+                String targetCommitFContent = targetCommitMap.get(fPath);
+                boolean hasSpiltCommitF = splitCommitMap.containsKey(fPath);
+                boolean hasCurrentCommitF = currentCommitMap.containsKey(fPath);
+                boolean hasTargetCommitF = targetCommitMap.containsKey(fPath);
+                if (hasSpiltCommitF
+                        && hasCurrentCommitF
+                        && hasTargetCommitF) {
+                    if (splitCommitFContent.equals(currentCommitFContent)
+                            && !splitCommitFContent.equals(targetCommitFContent)) {
+                        //modified in Other but not HEAD        → other
+                        add(fName);
+                    } else if (splitCommitFContent.equals(targetCommitFContent)
+                            && !splitCommitFContent.equals(currentCommitFContent)) {
+                        //modified in HEAD but not other        → HEAD
+                        continue;
+                    } else if (!splitCommitFContent.equals(targetCommitFContent)
+                            && !splitCommitFContent.equals(currentCommitFContent)) {
+                        if (targetCommitFContent.equals(currentCommitFContent)) {
+                            //no Conflict
+                            continue;
+                        } else if (!targetCommitFContent.equals(currentCommitFContent)) {
+                            //modified in other and HEAD (Conflict)
+                            
+                        }
+                    }
+                } else if (!hasSpiltCommitF
+                            && !hasTargetCommitF
+                            && hasCurrentCommitF) {
+                    //not in split nor other but in HEAD --> HEAD
+                    continue;
+                } else if (!hasSpiltCommitF
+                        && !hasCurrentCommitF
+                        && hasTargetCommitF) {
+                    //not in split nor HEAD but in other --> other
+                    add(fName);
+                } else if (!hasTargetCommitF
+                        && hasSpiltCommitF
+                        && hasCurrentCommitF
+                        && splitCommitFContent.equals(currentCommitFContent)) {
+                    //unmodified in HEAD but not present in other --> REMOVE
+                    rm(fName);
+                } else if (!hasCurrentCommitF
+                        && hasSpiltCommitF
+                        && hasTargetCommitF
+                        && splitCommitFContent.equals(targetCommitFContent)) {
+                    //unmodified in other but not present in HEAD --> REMAIN REMOVED
+                    //TODO: Perhaps I want to consider what is "remain removed"
+                    continue;
+                } else if (!hasSpiltCommitF 
+                        && hasCurrentCommitF 
+                        && hasTargetCommitF) {
+                    if (currentCommitFContent.equals(targetCommitFContent)) {
+                        //same way
+                        continue;
+                    } else {
+                        //conflict
+                    }            
+                } else if (!hasTargetCommitF
+                        && hasSpiltCommitF
+                        && hasCurrentCommitF) {
+                    if (splitCommitFContent.equals(currentCommitFContent)) {
+                        //same way
+                        continue;
+                    } else {
+                        //conflict
+                    }
+                } else if (!hasCurrentCommitF
+                        && hasSpiltCommitF
+                        && hasTargetCommitF) {
+                    if (splitCommitFContent.equals(targetCommitFContent)) {
+                        //same way
+                        continue;
+                    } else {
+                        //conflict
+                    }
+                } else {
+                    System.out.println("Wrong merge");
+                    System.exit(0);
+                }
             }
-        }
-        for (String CAN : commonAncestorNameSet) {
-            Commit CA = getCommit(CAN);
-            if (!commonAncestorNameSet.contains(CA)) {
-
-            }
-
         }
     }
 
+    public static Set<String> putCommitFilePathInSet(Commit commit, Set set) {
+        Set<String> commitContentSet = commit.contentKeySet();
+        for(String path : commitContentSet) {
+            set.add(path);
+        }
+        return set;
+    }
+    public static String getLatestCommonAncestorName(String commitName1, String commitName2) {
+        Set<String> Commit1AncestorNameSet = getCommitAncestorNameSet(commitName1);
+        Set<String> Commit2AncestorNameSet = getCommitAncestorNameSet(commitName2);
+        Set<String> commonAncestorNameSet = new HashSet<>();
+        for (String AncestorName : Commit1AncestorNameSet) {
+            if (Commit2AncestorNameSet.contains(AncestorName)) {
+                commonAncestorNameSet.add(AncestorName);
+            }
+        }
+        Set<String> commonAncestorParentNameSet = new HashSet<>();
+        for (String commonAncestorName : commonAncestorNameSet) {
+            Commit commonAncestor = getCommit(commonAncestorName);
+            String commonAncestorParentName = commonAncestor.getParent();
+            if (commonAncestorParentName != null) {
+                commonAncestorParentNameSet.add(commonAncestorParentName);
+            }
+        }
+        for (String commonAncestorName : commonAncestorNameSet) {
+            if (!commonAncestorParentNameSet.contains(commonAncestorName)) {
+                return commonAncestorName;
+            }
+        }
+        return null;
+    }
     public static Set<String> getCommitAncestorNameSetRecursive(String childCommitName, Set<String> resultSet) {
         resultSet.add(childCommitName);
         Commit ChildCommit = getCommit(childCommitName);
