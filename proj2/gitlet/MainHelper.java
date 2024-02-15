@@ -657,12 +657,12 @@ public class MainHelper {
         String writeString = "<<<<<<< HEAD\n";
         if (currentBlob != null) {
             String currentContent = currentBlob.getContentAsString();
-            writeString = writeString + currentContent + "\n";
+            writeString = writeString + currentContent;
         }
         writeString = writeString + "=======\n";
         if (writeString != null) {
             String targetContent = targetBlob.getContentAsString();
-            writeString = writeString + targetContent + "\n";
+            writeString = writeString + targetContent;
         }
         writeString = writeString + ">>>>>>>";
         writeContents(file, writeString);
