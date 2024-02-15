@@ -664,7 +664,7 @@ public class MainHelper {
             String targetContent = targetBlob.getContentAsString();
             writeString = writeString + targetContent;
         }
-        writeString = writeString + ">>>>>>>";
+        writeString = writeString + ">>>>>>>\n";
         writeContents(file, writeString);
     }
 
