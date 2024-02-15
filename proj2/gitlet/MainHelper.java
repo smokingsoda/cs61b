@@ -343,6 +343,10 @@ public class MainHelper {
         }
     }
 
+    public static void checkoutFileNameFromCommit(String fileName, Commit commit) {
+        File file = join(CWD, fileName);
+        commit.retrieveFile(file.getAbsolutePath());
+    }
     public static void checkoutFileName(String fileName) {
         Commit currentCommit = getHEADCommit();
         File file = join(CWD, fileName);
@@ -492,7 +496,7 @@ public class MainHelper {
             Commit currentCommit = getCommit(currentCommitName);
             Commit splitCommit = getCommit(latestCommonCommitName);
             Date nowDate = new Date();
-            Commit newCommit = currentCommit.createMergedChildCommit(targetCommit, nowDate);
+            Commit newCommit = currentCommit.createMergedChildCommit(targetCommit, nowDate, targetBranchName, currentBranchName);
             Set<String> allFilesPathSet = new HashSet<>();
             Map<String, String> targetCommitMap = targetCommit.getContent();
             Map<String, String> currentCommitMap = currentCommit.getContent();
@@ -537,6 +541,7 @@ public class MainHelper {
                     if (splitCommitFContent.equals(currentCommitFContent)
                             && !splitCommitFContent.equals(targetCommitFContent)) {
                         //modified in Other but not HEAD    -->     other
+                        checkoutFileNameFromCommit(fName, targetCommit);
                         add(fName);
                     } else if (splitCommitFContent.equals(targetCommitFContent)
                             && !splitCommitFContent.equals(currentCommitFContent)) {
@@ -564,6 +569,7 @@ public class MainHelper {
                         && !hasCurrentCommitF
                         && hasTargetCommitF) {
                     //not in split nor HEAD but in other --> other
+                    checkoutFileNameFromCommit(fName, targetCommit);
                     add(fName);
                 } else if (!hasTargetCommitF
                         && hasSpiltCommitF
@@ -623,6 +629,8 @@ public class MainHelper {
             if (conflictFlag) {
                 System.out.println("Encountered a merge conflict.");
             } else {
+                addStage = (Stage) loadObject(addStageFile, Stage.class);
+                removeStage = (Stage) loadObject(removeStageFile, Stage.class);
                 if (addStage.isEmpty() && removeStage.isEmpty()) {
                     System.out.println("No changes added to the commit.");
                     System.exit(0);

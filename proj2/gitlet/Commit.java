@@ -124,12 +124,13 @@ public class Commit implements Serializable {
         return message;
     }
 
-    public mergedCommit createMergedChildCommit(Commit otherCommit, Date timeStamp) {
+    public mergedCommit createMergedChildCommit(Commit otherCommit, Date timeStamp, String firstBranchName, String secondBranchName) {
         TreeMap<String, String> childContent = new TreeMap<>();
         Set<String> parentContentSet = content.keySet();
         for(String path : parentContentSet) {
             childContent.put(path, content.get(path));
         }//Copy the content
-        return new mergedCommit(this, otherCommit, timeStamp, childContent);
+        String message = String.format("Merged %s into %s.", firstBranchName, secondBranchName);
+        return new mergedCommit(message, this, otherCommit, timeStamp, childContent);
     }
 }
