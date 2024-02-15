@@ -584,6 +584,7 @@ public class MainHelper {
                         && splitCommitFContent.equals(targetCommitFContent)) {
                     //unmodified in other but not present in HEAD --> REMAIN REMOVED
                     //TODO: Perhaps I want to consider what is "remain removed"
+                    f.delete();
                     continue;
                 } else if (!hasSpiltCommitF
                         && hasCurrentCommitF
@@ -660,7 +661,7 @@ public class MainHelper {
             writeString = writeString + currentContent;
         }
         writeString = writeString + "=======\n";
-        if (writeString != null) {
+        if (targetBlob != null) {
             String targetContent = targetBlob.getContentAsString();
             writeString = writeString + targetContent;
         }
