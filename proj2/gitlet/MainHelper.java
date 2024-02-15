@@ -97,7 +97,7 @@ public class MainHelper {
     }
 
     public static void commit(String message, Date timeStamp) {
-        if (! validateGitlet()) {
+        if (!validateGitlet()) {
             System.out.println("Not a valid gitlet repository");
             System.exit(0);
         }
@@ -386,8 +386,8 @@ public class MainHelper {
             File f = new File((String) fPath);
             String currentFContent = loadFileToSHA1(f);
             if (f.exists()
-                    && ! currentCommit.containsBlob((String)fPath)
-                        && ! targetFContent.equals(currentFContent)) {
+                    && !currentCommit.containsBlob((String)fPath)
+                        && !targetFContent.equals(currentFContent)) {
                 System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                 System.exit(0);
                 return;
@@ -455,8 +455,21 @@ public class MainHelper {
 
     public static void merge(String targetBranchName) {
         String currentBranchName = getHEADBranch();
+        Stage addStage = (Stage) loadObject(addStageFile, Stage.class);
+        Stage removeStage = (Stage) loadObject(removeStageFile, Stage.class);
+        File targetBranchFile = join(branches, targetBranchName);
         if (currentBranchName.equals(targetBranchName)) {
             System.out.println("Cannot merge a branch with itself.");
+            System.exit(0);
+            return;
+        }
+        if (!addStage.isEmpty() || !removeStage.isEmpty()) {
+            System.out.println("You have uncommitted changes.");
+            System.exit(0);
+            return;
+        }
+        if (!targetBranchFile.exists()) {
+            System.out.println("A branch with that name does not exist.");
             System.exit(0);
             return;
         }
@@ -474,18 +487,41 @@ public class MainHelper {
             //Perhaps I want to move the branch?
             return;
         } else {
+            boolean conflictFlag = false;
             Commit targetCommit = getCommit(targetCommitName);
             Commit currentCommit = getCommit(currentCommitName);
             Commit splitCommit = getCommit(latestCommonCommitName);
             Date nowDate = new Date();
             Commit newCommit = currentCommit.createMergedChildCommit(targetCommit, nowDate);
             Set<String> allFilesPathSet = new HashSet<>();
-            allFilesPathSet = putCommitFilePathInSet(targetCommit, allFilesPathSet);
-            allFilesPathSet = putCommitFilePathInSet(currentCommit, allFilesPathSet);
-            allFilesPathSet = putCommitFilePathInSet(splitCommit, allFilesPathSet);
             Map<String, String> targetCommitMap = targetCommit.getContent();
             Map<String, String> currentCommitMap = currentCommit.getContent();
             Map<String,String> splitCommitMap = splitCommit.getContent();
+            allFilesPathSet = putCommitFilePathInSet(targetCommit, allFilesPathSet);
+            allFilesPathSet = putCommitFilePathInSet(splitCommit, allFilesPathSet);
+            boolean overwrittenFlag = false;
+            for (String fPath : allFilesPathSet) {
+                String splitCommitFContent = splitCommitMap.get(fPath);
+                String currentCommitFContent = currentCommitMap.get(fPath);
+                String targetCommitFContent = targetCommitMap.get(fPath);
+                boolean hasSpiltCommitF = splitCommitMap.containsKey(fPath);
+                boolean hasCurrentCommitF = currentCommitMap.containsKey(fPath);
+                boolean hasTargetCommitF = targetCommitMap.containsKey(fPath);
+                File f = new File(fPath);
+                if (f.exists() && !hasCurrentCommitF) {
+                    if (hasSpiltCommitF && !splitCommitFContent.equals(currentCommitFContent)) {
+                        overwrittenFlag = true;
+                    } else if (hasTargetCommitF && !targetCommitFContent.equals(currentCommitFContent)) {
+                        overwrittenFlag = true;
+                    }
+                    if (overwrittenFlag) {
+                        System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                        System.exit(0);
+                        return;
+                    }
+                }
+            }
+            allFilesPathSet = putCommitFilePathInSet(currentCommit, allFilesPathSet);
             for (String fPath : allFilesPathSet) {
                 File f = new File(fPath);
                 String fName = f.getName();
@@ -500,11 +536,11 @@ public class MainHelper {
                         && hasTargetCommitF) {
                     if (splitCommitFContent.equals(currentCommitFContent)
                             && !splitCommitFContent.equals(targetCommitFContent)) {
-                        //modified in Other but not HEAD        → other
+                        //modified in Other but not HEAD    -->     other
                         add(fName);
                     } else if (splitCommitFContent.equals(targetCommitFContent)
                             && !splitCommitFContent.equals(currentCommitFContent)) {
-                        //modified in HEAD but not other        → HEAD
+                        //modified in HEAD but not other    -->     HEAD
                         continue;
                     } else if (!splitCommitFContent.equals(targetCommitFContent)
                             && !splitCommitFContent.equals(currentCommitFContent)) {
@@ -512,8 +548,11 @@ public class MainHelper {
                             //no Conflict
                             continue;
                         } else if (!targetCommitFContent.equals(currentCommitFContent)) {
-                            //modified in other and HEAD (Conflict)
-                            
+                            //modified in other and HEAD    -->     Conflict
+                            Blob currentBlob = (Blob) loadObject(join(blobs, currentCommitFContent), Blob.class);
+                            Blob targetBlob = (Blob) loadObject(join(blobs, targetCommitFContent), Blob.class);
+                            putConflictContent(currentBlob, targetBlob, f);
+                            conflictFlag = true;
                         }
                     }
                 } else if (!hasSpiltCommitF
@@ -547,6 +586,10 @@ public class MainHelper {
                         continue;
                     } else {
                         //conflict
+                        Blob currentBlob = (Blob) loadObject(join(blobs, currentCommitFContent), Blob.class);
+                        Blob targetBlob = (Blob) loadObject(join(blobs, targetCommitFContent), Blob.class);
+                        putConflictContent(currentBlob, targetBlob, f);
+                        conflictFlag = true;
                     }            
                 } else if (!hasTargetCommitF
                         && hasSpiltCommitF
@@ -556,6 +599,9 @@ public class MainHelper {
                         continue;
                     } else {
                         //conflict
+                        Blob currentBlob = (Blob) loadObject(join(blobs, currentCommitFContent), Blob.class);
+                        putConflictContent(currentBlob, null, f);
+                        conflictFlag = true;
                     }
                 } else if (!hasCurrentCommitF
                         && hasSpiltCommitF
@@ -565,13 +611,50 @@ public class MainHelper {
                         continue;
                     } else {
                         //conflict
+                        Blob targetBlob = (Blob) loadObject(join(blobs, targetCommitFContent), Blob.class);
+                        putConflictContent(null, targetBlob, f);
+                        conflictFlag = true;
                     }
                 } else {
                     System.out.println("Wrong merge");
                     System.exit(0);
                 }
             }
+            if (conflictFlag) {
+                System.out.println("Encountered a merge conflict.");
+            } else {
+                if (addStage.isEmpty() && removeStage.isEmpty()) {
+                    System.out.println("No changes added to the commit.");
+                    System.exit(0);
+                } else {
+                    addToCommit(addStage, newCommit);//3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
+                    removeFromCommit(removeStage, newCommit);
+                    saveAsSHA1(newCommit, commits, 6);//4.Save childCommit
+                    updateBranch(newCommit, currentBranchName);
+                    updateHEAD(currentBranchName); // Update Head
+                    addStage.clearStageTree();//5.Clear stage
+                    removeStage.clearStageTree();
+                    saveFile(addStage, addStageFile);//6.Save stage
+                    saveFile(removeStage, removeStageFile);
+                    clearStagingAreaBlobs();
+                }
+            }
         }
+    }
+
+    public static void putConflictContent(Blob currentBlob, Blob targetBlob, File file) {
+        String writeString = "<<<<<<< HEAD\n";
+        if (currentBlob != null) {
+            String currentContent = currentBlob.getContentAsString();
+            writeString = writeString + currentContent;
+        }
+        writeString = writeString + "=======\n";
+        if (writeString != null) {
+            String targetContent = targetBlob.getContentAsString();
+            writeString = writeString + targetContent;
+        }
+        writeString = writeString + ">>>>>>>";
+        writeContents(file, writeString);
     }
 
     public static Set<String> putCommitFilePathInSet(Commit commit, Set set) {
@@ -646,7 +729,6 @@ public class MainHelper {
     public static byte[] loadByte(File file) {
         return readContents(file);
     }
-
     public static String loadString(File file) {
         return readContentsAsString(file);
     }
