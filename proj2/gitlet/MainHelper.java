@@ -500,7 +500,7 @@ public class MainHelper {
             Set<String> allFilesPathSet = new HashSet<>();
             Map<String, String> targetCommitMap = targetCommit.getContent();
             Map<String, String> currentCommitMap = currentCommit.getContent();
-            Map<String,String> splitCommitMap = splitCommit.getContent();
+            Map<String, String> splitCommitMap = splitCommit.getContent();
             allFilesPathSet = putCommitFilePathInSet(targetCommit, allFilesPathSet);
             allFilesPathSet = putCommitFilePathInSet(splitCommit, allFilesPathSet);
             boolean overwrittenFlag = false;
@@ -558,11 +558,12 @@ public class MainHelper {
                             Blob targetBlob = (Blob) loadObject(join(blobs, targetCommitFContent), Blob.class);
                             putConflictContent(currentBlob, targetBlob, f);
                             conflictFlag = true;
+                            add(fName);
                         }
                     }
                 } else if (!hasSpiltCommitF
-                            && !hasTargetCommitF
-                            && hasCurrentCommitF) {
+                        && !hasTargetCommitF
+                        && hasCurrentCommitF) {
                     //not in split nor other but in HEAD --> HEAD
                     continue;
                 } else if (!hasSpiltCommitF
@@ -584,8 +585,8 @@ public class MainHelper {
                     //unmodified in other but not present in HEAD --> REMAIN REMOVED
                     //TODO: Perhaps I want to consider what is "remain removed"
                     continue;
-                } else if (!hasSpiltCommitF 
-                        && hasCurrentCommitF 
+                } else if (!hasSpiltCommitF
+                        && hasCurrentCommitF
                         && hasTargetCommitF) {
                     if (currentCommitFContent.equals(targetCommitFContent)) {
                         //same way
@@ -596,7 +597,8 @@ public class MainHelper {
                         Blob targetBlob = (Blob) loadObject(join(blobs, targetCommitFContent), Blob.class);
                         putConflictContent(currentBlob, targetBlob, f);
                         conflictFlag = true;
-                    }            
+                        add(fName);
+                    }
                 } else if (!hasTargetCommitF
                         && hasSpiltCommitF
                         && hasCurrentCommitF) {
@@ -608,6 +610,7 @@ public class MainHelper {
                         Blob currentBlob = (Blob) loadObject(join(blobs, currentCommitFContent), Blob.class);
                         putConflictContent(currentBlob, null, f);
                         conflictFlag = true;
+                        add(fName);
                     }
                 } else if (!hasCurrentCommitF
                         && hasSpiltCommitF
@@ -620,6 +623,7 @@ public class MainHelper {
                         Blob targetBlob = (Blob) loadObject(join(blobs, targetCommitFContent), Blob.class);
                         putConflictContent(null, targetBlob, f);
                         conflictFlag = true;
+                        add(fName);
                     }
                 } else {
                     System.out.println("Wrong merge");
@@ -628,24 +632,23 @@ public class MainHelper {
             }
             if (conflictFlag) {
                 System.out.println("Encountered a merge conflict.");
+            }
+            addStage = (Stage) loadObject(addStageFile, Stage.class);
+            removeStage = (Stage) loadObject(removeStageFile, Stage.class);
+            if (addStage.isEmpty() && removeStage.isEmpty()) {
+                System.out.println("No changes added to the commit.");
+                System.exit(0);
             } else {
-                addStage = (Stage) loadObject(addStageFile, Stage.class);
-                removeStage = (Stage) loadObject(removeStageFile, Stage.class);
-                if (addStage.isEmpty() && removeStage.isEmpty()) {
-                    System.out.println("No changes added to the commit.");
-                    System.exit(0);
-                } else {
-                    addToCommit(addStage, newCommit);//3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
-                    removeFromCommit(removeStage, newCommit);
-                    saveAsSHA1(newCommit, commits, 6);//4.Save childCommit
-                    updateBranch(newCommit, currentBranchName);
-                    updateHEAD(currentBranchName); // Update Head
-                    addStage.clearStageTree();//5.Clear stage
-                    removeStage.clearStageTree();
-                    saveFile(addStage, addStageFile);//6.Save stage
-                    saveFile(removeStage, removeStageFile);
-                    clearStagingAreaBlobs();
-                }
+                addToCommit(addStage, newCommit);//3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
+                removeFromCommit(removeStage, newCommit);
+                saveAsSHA1(newCommit, commits, 6);//4.Save childCommit
+                updateBranch(newCommit, currentBranchName);
+                updateHEAD(currentBranchName); // Update Head
+                addStage.clearStageTree();//5.Clear stage
+                removeStage.clearStageTree();
+                saveFile(addStage, addStageFile);//6.Save stage
+                saveFile(removeStage, removeStageFile);
+                clearStagingAreaBlobs();
             }
         }
     }
@@ -654,12 +657,12 @@ public class MainHelper {
         String writeString = "<<<<<<< HEAD\n";
         if (currentBlob != null) {
             String currentContent = currentBlob.getContentAsString();
-            writeString = writeString + currentContent;
+            writeString = writeString + currentContent + "\n";
         }
         writeString = writeString + "=======\n";
         if (writeString != null) {
             String targetContent = targetBlob.getContentAsString();
-            writeString = writeString + targetContent;
+            writeString = writeString + targetContent + "\n";
         }
         writeString = writeString + ">>>>>>>";
         writeContents(file, writeString);
