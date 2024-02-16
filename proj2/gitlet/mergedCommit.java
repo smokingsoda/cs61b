@@ -23,4 +23,9 @@ public class mergedCommit extends Commit{
         returnString = returnString + "\n" + message;
         return returnString;
     }
+
+    public String getSecondParent() {
+        return secondParent;
+
+    }
 }

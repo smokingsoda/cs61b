@@ -702,10 +702,13 @@ public class MainHelper {
     }
     public static Set<String> getCommitAncestorNameSetRecursive(String childCommitName, Set<String> resultSet) {
         resultSet.add(childCommitName);
-        Commit ChildCommit = getCommit(childCommitName);
-        String parentCommitName = ChildCommit.getParent();
+        Commit childCommit = getCommit(childCommitName);
+        String parentCommitName = childCommit.getParent();
         if (parentCommitName == null) {
             return resultSet;
+        } else if (childCommit instanceof mergedCommit) {
+            resultSet = getCommitAncestorNameSetRecursive(parentCommitName, resultSet);
+            return getCommitAncestorNameSetRecursive(((mergedCommit) childCommit).getSecondParent(), resultSet);
         } else {
             return getCommitAncestorNameSetRecursive(parentCommitName, resultSet);
         }
