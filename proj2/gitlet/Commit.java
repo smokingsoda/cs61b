@@ -54,27 +54,27 @@ public class Commit implements Serializable {
         return content;
     }
 
-    public boolean containsBlob(String path) {
-        return content.containsKey(path.toLowerCase());
+    public boolean containsBlob(String name) {
+        return content.containsKey(name);
     }
 
-    public void putBlob(String path, String blob) {
-        content.put(path.toLowerCase(), blob);
+    public void putBlob(String name, String blob) {
+        content.put(name, blob);
     }
 
-    public String getBlob(String path) {
-        return content.get(path.toLowerCase());
+    public String getBlob(String name) {
+        return content.get(name);
     }
 
-    public String removeBlob(String path) {
-        return content.remove(path.toLowerCase());
+    public String removeBlob(String name) {
+        return content.remove(name);
     }
 
     public Commit createChildCommit(String message, Date timeStamp) {
         TreeMap<String, String> childContent = new TreeMap<>();
         Set<String> parentContentSet = content.keySet();
-        for(String path : parentContentSet) {
-            childContent.put(path, content.get(path));
+        for(String name : parentContentSet) {
+            childContent.put(name, content.get(name));
         }//Copy the content
         return new Commit(message, this, timeStamp, childContent);
     }
@@ -83,8 +83,8 @@ public class Commit implements Serializable {
         return parent;
     }
 
-    public void retrieveFile(String path) {
-        String retrieveBlobName = getBlob(path.toLowerCase());
+    public void retrieveFile(String fileName) {
+        String retrieveBlobName = getBlob(fileName);
         if (retrieveBlobName == null) {
             System.out.println("File does not exist in that commit.");
             System.exit(0);
@@ -92,7 +92,7 @@ public class Commit implements Serializable {
         }
         File retrieveBlobFile = join(MainHelper.blobs, retrieveBlobName);
         Blob retrieveBlob = (Blob) MainHelper.loadObject(retrieveBlobFile, Blob.class);
-        File retrieveFile = new File(path);
+        File retrieveFile = join(MainHelper.CWD, fileName);
         byte[] retrieveFileContent = retrieveBlob.getContent();
         writeContents(retrieveFile, retrieveFileContent);
     }
@@ -109,9 +109,9 @@ public class Commit implements Serializable {
         return returnString;
     }
 
-    public String getBlobContentSHA1(String path) {
-        if (containsBlob(path)) {
-            String blobName = getBlob(path);
+    public String getBlobContentSHA1(String fileName) {
+        if (containsBlob(fileName)) {
+            String blobName = getBlob(fileName);
             File blobFile = join(MainHelper.blobs, blobName);
             Blob targetBlob = (Blob) MainHelper.loadObject(blobFile, Blob.class);
             return targetBlob.contentToSHA1();
@@ -127,8 +127,8 @@ public class Commit implements Serializable {
     public mergedCommit createMergedChildCommit(Commit otherCommit, Date timeStamp, String firstBranchName, String secondBranchName) {
         TreeMap<String, String> childContent = new TreeMap<>();
         Set<String> parentContentSet = content.keySet();
-        for(String path : parentContentSet) {
-            childContent.put(path, content.get(path));
+        for(String name : parentContentSet) {
+            childContent.put(name, content.get(name));
         }//Copy the content
         String message = String.format("Merged %s into %s.", firstBranchName, secondBranchName);
         return new mergedCommit(message, this, otherCommit, timeStamp, childContent);

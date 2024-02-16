@@ -6,13 +6,13 @@ import java.nio.charset.StandardCharsets;
 import static gitlet.Utils.sha1;
 
 public class Blob implements Serializable {
-    private String path;
+    private String name;
     private byte[] content;
 
     //private String ref;
 
-    public Blob(String path, byte[] content) {
-        this.path = path.toLowerCase();
+    public Blob(String name, byte[] content) {
+        this.name = name.toLowerCase();
         this.content = content;
     }
 
@@ -20,8 +20,8 @@ public class Blob implements Serializable {
         return content;
     }
 
-    public String getPath() {
-        return path;
+    public String getName() {
+        return name;
     }
 
     public String contentToSHA1() {

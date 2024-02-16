@@ -65,23 +65,23 @@ public class MainHelper {
             Commit currentCommit = getHEADCommit();
             Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
             Stage removeStageArea = (Stage) loadObject(removeStageFile, Stage.class);
-            String addingFilePath = addingFile.getAbsolutePath();
-            Blob addBlob = new Blob(addingFilePath, loadByte(addingFile));
+            String addingFileName = addingFile.getName();
+            Blob addBlob = new Blob(addingFileName, loadByte(addingFile));
             //1.Create new blob
             String addBlobName = objToSHA1(addBlob);
             //2. Convert the blob's content into SHA1
-            String currentCommitBlob = currentCommit.getBlob(addingFilePath);
+            String currentCommitBlob = currentCommit.getBlob(addingFileName);
             if (currentCommitBlob == null || !(currentCommitBlob.equals(addBlobName))) {
                 File addBlobFile = join(stagingAreaBlobs, addBlobName);
                 //3. Create a file in addStage folder
                 saveFile(addBlob, addBlobFile);
                 //4. Store this blob in the certain file
-                addStageArea.putFile(addingFile.getAbsolutePath(), addBlobName);
+                addStageArea.putFile(addingFileName, addBlobName);
                 //5. Store the addingFile's A path as key, the File content(SHA1) as value in case of looking up this file;
             } else {
-                addStageArea.removeFile(addingFilePath);
+                addStageArea.removeFile(addingFileName);
             }
-            removeStageArea.removeFile(addingFilePath);
+            removeStageArea.removeFile(addingFileName);
             saveFile(addStageArea, addStageFile);
             saveFile(removeStageArea, removeStageFile);
             //6. Save the addStageArea
@@ -123,16 +123,16 @@ public class MainHelper {
         Commit currentCommit = getHEADCommit();
         Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
         Stage removeStageArea = (Stage) loadObject(removeStageFile, Stage.class);
-        String removingFilePath = removingFile.getAbsolutePath();
-        Boolean addStageAreaContains = addStageArea.containsFile(removingFilePath);
-        Boolean currentCommitContains = currentCommit.containsBlob(removingFilePath);
+        String removingFileName = removingFile.getName();
+        Boolean addStageAreaContains = addStageArea.containsFile(removingFileName);
+        Boolean currentCommitContains = currentCommit.containsBlob(removingFileName);
         if (addStageAreaContains || currentCommitContains) {
             if (addStageAreaContains) {
-                addStageArea.removeFile(removingFilePath);
+                addStageArea.removeFile(removingFileName);
             }
             if (currentCommitContains) {
-                removeStageArea.putFile(removingFilePath, "dummy SHA1");
-                restrictedDelete(removingFilePath);
+                removeStageArea.putFile(removingFileName, "dummy SHA1");
+                restrictedDelete(removingFileName);
             }
             saveFile(addStageArea, addStageFile);
             saveFile(removeStageArea, removeStageFile);
@@ -203,52 +203,51 @@ public class MainHelper {
             }
         });
         for (File f : CWDFile) {
-            allFile.add(f.getAbsolutePath().toLowerCase());
+            allFile.add(f.getName());
         }
         //current commit files
-        for (String fAbsolutePath : currentCommitFileSet) {
-            allFile.add(fAbsolutePath.toLowerCase());
+        for (String fName : currentCommitFileSet) {
+            allFile.add(fName);
         }
         //addStage files
-        for (String fAbsolutePath : addStageFileSet) {
-            allFile.add(fAbsolutePath.toLowerCase());
+        for (String fName: addStageFileSet) {
+            allFile.add(fName);
         }
         //removeStage files
-        for (String fAbsolutePath : removeStageFileSet) {
-            allFile.add(fAbsolutePath.toLowerCase());
+        for (String fName : removeStageFileSet) {
+            allFile.add(fName);
         }
 
-        for (String fAbsolutePath : allFile) {
-            File f = new File(fAbsolutePath);
+        for (String fName : allFile) {
+            File f = join(CWD, fName);
             String fSHA1 = loadFileToSHA1(f);
-            String fName = f.getName();
             if (f.exists()
-                    && currentCommit.containsBlob(fAbsolutePath)
-                    && !fSHA1.equals(currentCommit.getBlobContentSHA1(fAbsolutePath))
-                    && !addStage.containsFile(fAbsolutePath)) {
+                    && currentCommit.containsBlob(fName)
+                    && !fSHA1.equals(currentCommit.getBlobContentSHA1(fName))
+                    && !addStage.containsFile(fName)) {
                 //Tracked in the current commit, changed in the working directory, but not staged;
                 modificationFileMap.put(fName, "modified");
                 continue;
             } else if (f.exists()
-                    && addStage.containsFile(fAbsolutePath)
-                    && !fSHA1.equals(addStage.getBlobContentSHA1(fAbsolutePath))) {
+                    && addStage.containsFile(fName)
+                    && !fSHA1.equals(addStage.getBlobContentSHA1(fName))) {
                 //Staged for addition, but with different contents than in the working directory;
                 modificationFileMap.put(fName, "modified");
                 continue;
-            } else if (addStage.containsFile(fAbsolutePath) && !f.exists()) {
+            } else if (addStage.containsFile(fName) && !f.exists()) {
                 //Staged for addition, but deleted in the working directory;
                 modificationFileMap.put(fName, "deleted");
                 continue;
-            } else if (!removeStage.containsFile(fAbsolutePath)
-                    && currentCommit.containsBlob(fAbsolutePath)
+            } else if (!removeStage.containsFile(fName)
+                    && currentCommit.containsBlob(fName)
                     && !f.exists()) {
                 //Not staged for removal, but tracked in the current commit and deleted from the working directory.
                 modificationFileMap.put(fName, "deleted");
-            } else if (addStage.containsFile(fAbsolutePath)) {
+            } else if (addStage.containsFile(fName)) {
                 stagedFilesSet.add(fName);
-            } else if (removeStage.containsFile(fAbsolutePath)) {
+            } else if (removeStage.containsFile(fName)) {
                 removedFilesSet.add(fName);
-            } else if (!addStage.containsFile(fAbsolutePath) && !currentCommit.containsBlob(fAbsolutePath)) {
+            } else if (!addStage.containsFile(fName) && !currentCommit.containsBlob(fName)) {
                 untrackedFileSet.add(fName);
             }
         }
@@ -315,20 +314,20 @@ public class MainHelper {
     }
 
     public static void checkoutFileNameFromCommit(String fileName, Commit commit) {
-        File file = join(CWD, fileName);
-        commit.retrieveFile(file.getAbsolutePath());
+        //File file = join(CWD, fileName);
+        commit.retrieveFile(fileName);
     }
 
     public static void checkoutFileName(String fileName) {
         Commit currentCommit = getHEADCommit();
-        File file = join(CWD, fileName);
-        currentCommit.retrieveFile(file.getAbsolutePath());
+        //File file = join(CWD, fileName);
+        currentCommit.retrieveFile(fileName);
     }
 
     public static void checkoutCommitFileName(String commitSHA1, String fileName) {
         Commit targetCommit = getCommit(commitSHA1);
-        File file = join(CWD, fileName);
-        targetCommit.retrieveFile(file.getAbsolutePath());
+        //File file = join(CWD, fileName);
+        targetCommit.retrieveFile(fileName);
     }
 
     public static void checkoutBranchName(String branchName) {
@@ -356,13 +355,13 @@ public class MainHelper {
                 return pathname.isFile();
             }
         });
-        Set targetCommitContentSet = targetCommit.contentKeySet();
-        for (Object fPath : targetCommitContentSet) {
-            String targetFContent = targetCommit.getBlob((String) fPath);
-            File f = new File((String) fPath);
+        Set<String> targetCommitContentSet = targetCommit.contentKeySet();
+        for (String fName : targetCommitContentSet) {
+            String targetFContent = targetCommit.getBlob(fName);
+            File f = join(CWD, fName);
             String currentFContent = loadFileToSHA1(f);
             if (f.exists()
-                    && !currentCommit.containsBlob((String) fPath)
+                    && !currentCommit.containsBlob(fName)
                     && !targetFContent.equals(currentFContent)) {
                 System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                 System.exit(0);
@@ -370,14 +369,14 @@ public class MainHelper {
             }
         }
         for (File f : CWDFiles) {
-            String fPath = f.getAbsolutePath();
-            if (currentCommit.containsBlob(fPath)
-                    && !targetCommit.containsBlob(fPath)) {
+            String fName = f.getName();
+            if (currentCommit.containsBlob(fName)
+                    && !targetCommit.containsBlob(fName)) {
                 f.delete();
             }
         }
-        for (Object fPath : targetCommitContentSet) {
-            targetCommit.retrieveFile((String) fPath);
+        for (String fName : targetCommitContentSet) {
+            targetCommit.retrieveFile(fName);
         }
         Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
         Stage removeStageArea = (Stage) loadObject(removeStageFile, Stage.class);
@@ -449,38 +448,40 @@ public class MainHelper {
         String targetCommitName = getBranchCommitName(targetBranchName);
         String currentCommitName = getBranchCommitName(currentBranchName);
         String latestCommonCommitName = getLatestCommonAncestorName(targetCommitName, currentCommitName);
+        Commit targetCommit = getCommit(targetCommitName);
+        Commit currentCommit = getCommit(currentCommitName);
+        Commit splitCommit = getCommit(latestCommonCommitName);
         if (latestCommonCommitName.equals(targetCommitName)) {
             System.out.println("Given branch is an ancestor of the current branch.");
             System.exit(0);
             return;
         } else if (latestCommonCommitName.equals(currentCommitName)) {
             checkoutCommitSHA1(targetCommitName);
+            updateBranch(targetCommit, currentBranchName);
+            updateHEAD(currentBranchName);
             System.out.println("Current branch fast-forwarded.");
             System.exit(0);
             //Perhaps I want to move the branch?
             return;
         } else {
             boolean conflictFlag = false;
-            Commit targetCommit = getCommit(targetCommitName);
-            Commit currentCommit = getCommit(currentCommitName);
-            Commit splitCommit = getCommit(latestCommonCommitName);
             Date nowDate = new Date();
             Commit newCommit = currentCommit.createMergedChildCommit(targetCommit, nowDate, targetBranchName, currentBranchName);
-            Set<String> allFilesPathSet = new HashSet<>();
+            Set<String> allFilesNameSet = new HashSet<>();
             Map<String, String> targetCommitMap = targetCommit.getContent();
             Map<String, String> currentCommitMap = currentCommit.getContent();
             Map<String, String> splitCommitMap = splitCommit.getContent();
-            allFilesPathSet = putCommitFilePathInSet(targetCommit, allFilesPathSet);
-            allFilesPathSet = putCommitFilePathInSet(splitCommit, allFilesPathSet);
+            allFilesNameSet = putCommitFilePathInSet(targetCommit, allFilesNameSet);
+            allFilesNameSet = putCommitFilePathInSet(splitCommit, allFilesNameSet);
             boolean overwrittenFlag = false;
-            for (String fPath : allFilesPathSet) {
-                String splitCommitFContent = splitCommitMap.get(fPath);
-                String currentCommitFContent = currentCommitMap.get(fPath);
-                String targetCommitFContent = targetCommitMap.get(fPath);
-                boolean hasSpiltCommitF = splitCommitMap.containsKey(fPath);
-                boolean hasCurrentCommitF = currentCommitMap.containsKey(fPath);
-                boolean hasTargetCommitF = targetCommitMap.containsKey(fPath);
-                File f = new File(fPath);
+            for (String fName : allFilesNameSet) {
+                String splitCommitFContent = splitCommitMap.get(fName);
+                String currentCommitFContent = currentCommitMap.get(fName);
+                String targetCommitFContent = targetCommitMap.get(fName);
+                boolean hasSpiltCommitF = splitCommitMap.containsKey(fName);
+                boolean hasCurrentCommitF = currentCommitMap.containsKey(fName);
+                boolean hasTargetCommitF = targetCommitMap.containsKey(fName);
+                File f = join(CWD, fName);
                 if (f.exists() && !hasCurrentCommitF) {
                     if (hasSpiltCommitF && !splitCommitFContent.equals(currentCommitFContent)) {
                         overwrittenFlag = true;
@@ -494,16 +495,15 @@ public class MainHelper {
                     }
                 }
             }
-            allFilesPathSet = putCommitFilePathInSet(currentCommit, allFilesPathSet);
-            for (String fPath : allFilesPathSet) {
-                File f = new File(fPath);
-                String fName = f.getName();
-                String splitCommitFContent = splitCommitMap.get(fPath);
-                String currentCommitFContent = currentCommitMap.get(fPath);
-                String targetCommitFContent = targetCommitMap.get(fPath);
-                boolean hasSpiltCommitF = splitCommitMap.containsKey(fPath);
-                boolean hasCurrentCommitF = currentCommitMap.containsKey(fPath);
-                boolean hasTargetCommitF = targetCommitMap.containsKey(fPath);
+            allFilesNameSet = putCommitFilePathInSet(currentCommit, allFilesNameSet);
+            for (String fName : allFilesNameSet) {
+                File f = join(CWD, fName);
+                String splitCommitFContent = splitCommitMap.get(fName);
+                String currentCommitFContent = currentCommitMap.get(fName);
+                String targetCommitFContent = targetCommitMap.get(fName);
+                boolean hasSpiltCommitF = splitCommitMap.containsKey(fName);
+                boolean hasCurrentCommitF = currentCommitMap.containsKey(fName);
+                boolean hasTargetCommitF = targetCommitMap.containsKey(fName);
                 if (hasSpiltCommitF
                         && hasCurrentCommitF
                         && hasTargetCommitF) {
