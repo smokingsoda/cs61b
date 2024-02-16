@@ -1,6 +1,6 @@
 package gitlet;
 
-// TODO: any imports you need here
+
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -12,14 +12,14 @@ import static gitlet.Utils.writeContents;
 
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
+ *
  *  does at a high level.
  *
  *  @author Junru Wang
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
+     *
      *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
@@ -33,9 +33,9 @@ public class Commit implements Serializable {
     /** Time data*/
     protected Date timeStamp;
     protected TreeMap<String, String> content;
-    protected static final SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.US);
+    protected static final SimpleDateFormat sdf
+            = new SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.US);
 
-    /* TODO: fill in the rest of this class. */
     public Commit(String message, Commit parent, Date timeStamp, TreeMap<String, String> content) {
         this.message = message;
         this.parent = MainHelper.objToSHA1(parent);
@@ -73,9 +73,9 @@ public class Commit implements Serializable {
     public Commit createChildCommit(String message, Date timeStamp) {
         TreeMap<String, String> childContent = new TreeMap<>();
         Set<String> parentContentSet = content.keySet();
-        for(String name : parentContentSet) {
+        for (String name : parentContentSet) {
             childContent.put(name, content.get(name));
-        }//Copy the content
+        } //Copy the content
         return new Commit(message, this, timeStamp, childContent);
     }
 

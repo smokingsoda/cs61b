@@ -59,7 +59,8 @@ public class MainHelper {
             updateBranch(currentCommit, "master");
             updateHEAD("master");
         } else {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
+            System.out.println
+                    ("A Gitlet version-control system already exists in the current directory.");
         }
         System.exit(0);
     }
@@ -82,7 +83,8 @@ public class MainHelper {
                 saveFile(addBlob, addBlobFile);
                 //4. Store this blob in the certain file
                 addStageArea.putFile(addingFileName, addBlobName);
-                //5. Store the addingFile's A path as key, the File content(SHA1) as value in case of looking up this file;
+                //5. Store the addingFile's A path as key,
+                // the File content(SHA1) as value in case of looking up this file;
             } else {
                 addStageArea.removeFile(addingFileName);
             }
@@ -101,23 +103,28 @@ public class MainHelper {
             System.out.println("Please enter a commit message.");
             System.exit(0);
         }
-        Commit parentCommit = getHEADCommit();//1.Get the current Commit
+        Commit parentCommit = getHEADCommit(); //1.Get the current Commit
         String currentBranch = getHEADBranch();
-        Commit childCommit = parentCommit.createChildCommit(message, timeStamp);//2.Create a brand-new Commit(everything is different)
+        Commit childCommit = parentCommit.createChildCommit(message, timeStamp);
+        //2.Create a brand-new Commit(everything is different)
         Stage addStage = (Stage) loadObject(addStageFile, Stage.class);
         Stage removeStage = (Stage) loadObject(removeStageFile, Stage.class);
         if (addStage.isEmpty() && removeStage.isEmpty()) {
             System.out.println("No changes added to the commit.");
             System.exit(0);
         } else {
-            addToCommit(addStage, childCommit);//3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
+            addToCommit(addStage, childCommit);
+            //3.According to the stageArea, Modify the childCommit, and move the blobs to blobs
             removeFromCommit(removeStage, childCommit);
-            saveAsSHA1(childCommit, commits, 6);//4.Save childCommit
+            saveAsSHA1(childCommit, commits, 6);
+            //4.Save childCommit
             updateBranch(childCommit, currentBranch);
             updateHEAD(currentBranch); // Update Head
-            addStage.clearStageTree();//5.Clear stage
+            addStage.clearStageTree();
+            //5.Clear stage
             removeStage.clearStageTree();
-            saveFile(addStage, addStageFile);//6.Save stage
+            saveFile(addStage, addStageFile);
+            //6.Save stage
             saveFile(removeStage, removeStageFile);
             clearStagingAreaBlobs();
         }
