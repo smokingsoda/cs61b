@@ -26,8 +26,8 @@ public class Stage implements Serializable {
         return stageTree.get(name);
     }
 
-    public void putFile(String path, String blobSHA1) {
-        stageTree.put(path, blobSHA1);
+    public void putFile(String name, String blobSHA1) {
+        stageTree.put(name, blobSHA1);
     }
 
     public String removeFile(String name) {

@@ -600,8 +600,9 @@ public class MainHelper {
                             && !hasCurrentCommitF) {
                     //same way
                     continue;
+                } else if (!hasSpiltCommitF && !hasTargetCommitF && !hasCurrentCommitF) {
+                    System.out.println("Wrong");
                 }
-
             }
             if (conflictFlag) {
                 System.out.println("Encountered a merge conflict.");
@@ -643,8 +644,8 @@ public class MainHelper {
 
     public static Set<String> putCommitFilePathInSet(Commit commit, Set set) {
         Set<String> commitContentSet = commit.contentKeySet();
-        for(String path : commitContentSet) {
-            set.add(path.toLowerCase());
+        for(String name : commitContentSet) {
+            set.add(name);
         }
         return set;
     }
