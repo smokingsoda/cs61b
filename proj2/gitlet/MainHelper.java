@@ -24,17 +24,17 @@ public class MainHelper {
 
     /**
      * .gitlet
-     *      -commits
-     *          -six-number shorten id
-     *      -blobs
-     *      -stagingArea
-     *          -addStage(obj)
-     *          -removeStage(obj)
-     *          -stagingAreaBlobs
-     *      -HEAD
-     *      -branches
-     *          -master
-     *          -other branches
+     * -commits
+     * -six-number shorten id
+     * -blobs
+     * -stagingArea
+     * -addStage(obj)
+     * -removeStage(obj)
+     * -stagingAreaBlobs
+     * -HEAD
+     * -branches
+     * -master
+     * -other branches
      */
 
     public static void init() {
@@ -60,10 +60,6 @@ public class MainHelper {
     }
 
     public static void add(String fileName) {
-        if (!validateGitlet()) {
-            System.out.println("Not a valid gitlet repository");
-            System.exit(0);
-        }
         File addingFile = join(CWD, fileName);
         if (addingFile.exists()) {
             Commit currentCommit = getHEADCommit();
@@ -82,8 +78,7 @@ public class MainHelper {
                 //4. Store this blob in the certain file
                 addStageArea.putFile(addingFile.getAbsolutePath(), addBlobName);
                 //5. Store the addingFile's A path as key, the File content(SHA1) as value in case of looking up this file;
-            }
-            else {
+            } else {
                 addStageArea.removeFile(addingFilePath);
             }
             removeStageArea.removeFile(addingFilePath);
@@ -97,10 +92,6 @@ public class MainHelper {
     }
 
     public static void commit(String message, Date timeStamp) {
-        if (!validateGitlet()) {
-            System.out.println("Not a valid gitlet repository");
-            System.exit(0);
-        }
         if (message.equals("")) {
             System.out.println("Please enter a commit message.");
             System.exit(0);
@@ -128,10 +119,6 @@ public class MainHelper {
     }
 
     public static void rm(String fileName) {
-        if (!validateGitlet()) {
-            System.out.println("Not a valid gitlet repository");
-            System.exit(0);
-        }
         File removingFile = join(CWD, fileName);
         Commit currentCommit = getHEADCommit();
         Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
@@ -156,10 +143,6 @@ public class MainHelper {
     }
 
     public static void log() {
-        if (!validateGitlet()) {
-            System.out.println("Not a valid gitlet repository");
-            System.exit(0);
-        }
         String currentBranch = getHEADBranch();
         String currentCommitName = getBranchCommitName(currentBranch);
         recursiveLog(currentCommitName);
@@ -180,10 +163,6 @@ public class MainHelper {
     }
 
     public static void status() {
-        if (!validateGitlet()) {
-            System.out.println("Not a valid gitlet repository");
-            System.exit(0);
-        }
         TreeMap<String, String> modificationFileMap = new TreeMap<>();
         TreeSet<String> untrackedFileSet = new TreeSet<>();
         Commit currentCommit = getHEADCommit();
@@ -202,11 +181,11 @@ public class MainHelper {
         System.out.println("=== Branches ===");
         File[] branchesFile = branches.listFiles();
         String currentBranch = getHEADBranch();
-        for(File f : branchesFile) {
+        for (File f : branchesFile) {
             String fName = f.getName();
             branchesSet.add(fName);
         }
-        for(String fName : branchesSet) {
+        for (String fName : branchesSet) {
             if (fName.equals(currentBranch)) {
                 fName = "*" + fName;
             }
@@ -227,7 +206,7 @@ public class MainHelper {
             allFile.add(f.getAbsolutePath().toLowerCase());
         }
         //current commit files
-        for(String fAbsolutePath : currentCommitFileSet) {
+        for (String fAbsolutePath : currentCommitFileSet) {
             allFile.add(fAbsolutePath.toLowerCase());
         }
         //addStage files
@@ -245,14 +224,14 @@ public class MainHelper {
             String fName = f.getName();
             if (f.exists()
                     && currentCommit.containsBlob(fAbsolutePath)
-                        && !fSHA1.equals(currentCommit.getBlobContentSHA1(fAbsolutePath))
-                            && ! addStage.containsFile(fAbsolutePath)) {
+                    && !fSHA1.equals(currentCommit.getBlobContentSHA1(fAbsolutePath))
+                    && !addStage.containsFile(fAbsolutePath)) {
                 //Tracked in the current commit, changed in the working directory, but not staged;
                 modificationFileMap.put(fName, "modified");
                 continue;
             } else if (f.exists()
-                        && addStage.containsFile(fAbsolutePath)
-                            && !fSHA1.equals(addStage.getBlobContentSHA1(fAbsolutePath))) {
+                    && addStage.containsFile(fAbsolutePath)
+                    && !fSHA1.equals(addStage.getBlobContentSHA1(fAbsolutePath))) {
                 //Staged for addition, but with different contents than in the working directory;
                 modificationFileMap.put(fName, "modified");
                 continue;
@@ -261,15 +240,15 @@ public class MainHelper {
                 modificationFileMap.put(fName, "deleted");
                 continue;
             } else if (!removeStage.containsFile(fAbsolutePath)
-                        && currentCommit.containsBlob(fAbsolutePath)
-                            && ! f.exists()) {
+                    && currentCommit.containsBlob(fAbsolutePath)
+                    && !f.exists()) {
                 //Not staged for removal, but tracked in the current commit and deleted from the working directory.
                 modificationFileMap.put(fName, "deleted");
             } else if (addStage.containsFile(fAbsolutePath)) {
                 stagedFilesSet.add(fName);
             } else if (removeStage.containsFile(fAbsolutePath)) {
                 removedFilesSet.add(fName);
-            } else if (!addStage.containsFile(fAbsolutePath) && ! currentCommit.containsBlob(fAbsolutePath)) {
+            } else if (!addStage.containsFile(fAbsolutePath) && !currentCommit.containsBlob(fAbsolutePath)) {
                 untrackedFileSet.add(fName);
             }
         }
@@ -310,10 +289,6 @@ public class MainHelper {
     }
 
     public static void branch(String branchName) {
-        if (!validateGitlet()) {
-            System.out.println("Not a valid gitlet repository");
-            System.exit(0);
-        }
         File newBranchFile = join(branches, branchName);
         if (newBranchFile.exists()) {
             System.out.println("A branch with that name already exists.");
@@ -325,10 +300,6 @@ public class MainHelper {
     }
 
     public static void rmBranch(String branchName) {
-        if (!validateGitlet()) {
-            System.out.println("Not a valid gitlet repository");
-            System.exit(0);
-        }
         File removeBranchFile = join(branches, branchName);
         if (!removeBranchFile.exists()) {
             System.out.println("A branch with that name does not exist.");
@@ -347,6 +318,7 @@ public class MainHelper {
         File file = join(CWD, fileName);
         commit.retrieveFile(file.getAbsolutePath());
     }
+
     public static void checkoutFileName(String fileName) {
         Commit currentCommit = getHEADCommit();
         File file = join(CWD, fileName);
@@ -361,7 +333,7 @@ public class MainHelper {
 
     public static void checkoutBranchName(String branchName) {
         File targetBranchFile = join(branches, branchName);
-        if (! targetBranchFile.exists()) {
+        if (!targetBranchFile.exists()) {
             System.out.println("No such branch exists.");
             System.exit(0);
         } else if (branchName.toLowerCase().equals(getHEADBranch())) {
@@ -386,12 +358,12 @@ public class MainHelper {
         });
         Set targetCommitContentSet = targetCommit.contentKeySet();
         for (Object fPath : targetCommitContentSet) {
-            String targetFContent = targetCommit.getBlob((String)fPath);
+            String targetFContent = targetCommit.getBlob((String) fPath);
             File f = new File((String) fPath);
             String currentFContent = loadFileToSHA1(f);
             if (f.exists()
-                    && !currentCommit.containsBlob((String)fPath)
-                        && !targetFContent.equals(currentFContent)) {
+                    && !currentCommit.containsBlob((String) fPath)
+                    && !targetFContent.equals(currentFContent)) {
                 System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
                 System.exit(0);
                 return;
@@ -405,7 +377,7 @@ public class MainHelper {
             }
         }
         for (Object fPath : targetCommitContentSet) {
-            targetCommit.retrieveFile((String)fPath);
+            targetCommit.retrieveFile((String) fPath);
         }
         Stage addStageArea = (Stage) loadObject(addStageFile, Stage.class);
         Stage removeStageArea = (Stage) loadObject(removeStageFile, Stage.class);
@@ -436,20 +408,17 @@ public class MainHelper {
     }
 
     public static void find(String keyWords) {
-        String[] keyWord = keyWords.split(" ");
         Set<File> commitSet = getCommitSet();
         Set<String> commitNamePrinted = new HashSet<>();
-        for (String w : keyWord) {
-            for (File comFile : commitSet) {
-                Commit commit = (Commit) loadObject(comFile, Commit.class);
-                String[] arr = commit.getMessage().split(" ");
-                for (String word : arr) {
-                    if (word.equals(w.toLowerCase()) && !commitNamePrinted.contains(comFile.getName())) {
-                        System.out.println(comFile.getName());
-                        commitNamePrinted.add(comFile.getName());
-                    }
-                }
+        for (File comFile : commitSet) {
+            Commit commit = (Commit) loadObject(comFile, Commit.class);
+            String commitMessage = commit.getMessage();
+            if (commitMessage.equals(keyWords)) {
+                commitNamePrinted.add(comFile.getName());
             }
+        } for (String commitName : commitNamePrinted) {
+            System.out.println(commitName);
+
         }
         if (commitNamePrinted.isEmpty()) {
             System.out.println("Found no commit with that message.");
@@ -584,7 +553,7 @@ public class MainHelper {
                         && splitCommitFContent.equals(targetCommitFContent)) {
                     //unmodified in other but not present in HEAD --> REMAIN REMOVED
                     //TODO: Perhaps I want to consider what is "remain removed"
-                    f.delete();
+                    //f.delete();
                     continue;
                 } else if (!hasSpiltCommitF
                         && hasCurrentCommitF
@@ -626,10 +595,13 @@ public class MainHelper {
                         conflictFlag = true;
                         add(fName);
                     }
-                } else {
-                    System.out.println("Wrong merge");
-                    System.exit(0);
+                } else if (hasSpiltCommitF
+                            && !hasTargetCommitF
+                            && !hasCurrentCommitF) {
+                    //same way
+                    continue;
                 }
+
             }
             if (conflictFlag) {
                 System.out.println("Encountered a merge conflict.");
@@ -672,7 +644,7 @@ public class MainHelper {
     public static Set<String> putCommitFilePathInSet(Commit commit, Set set) {
         Set<String> commitContentSet = commit.contentKeySet();
         for(String path : commitContentSet) {
-            set.add(path);
+            set.add(path.toLowerCase());
         }
         return set;
     }
