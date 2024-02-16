@@ -2,9 +2,10 @@ package gitlet;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import static gitlet.Utils.*;
@@ -21,20 +22,22 @@ public class MainHelper {
     static final File HEAD = join(gitletFolder, "HEAD");
     static final File branches = join(gitletFolder, "branches");
     static final File masterBranch = join(branches, "master");
+    static final File remotes = join(gitletFolder, "remote");
 
     /**
      * .gitlet
-     * -commits
-     * -six-number shorten id
-     * -blobs
-     * -stagingArea
-     * -addStage(obj)
-     * -removeStage(obj)
-     * -stagingAreaBlobs
-     * -HEAD
-     * -branches
-     * -master
-     * -other branches
+        * -commits
+            * -six-number shorten id
+        * -blobs
+        * -stagingArea
+            * -addStage(obj)
+            * -removeStage(obj)
+            * -stagingAreaBlobs
+        * -HEAD
+        * -branches
+            * -master
+            * -other branches
+        * -remotes(obj)
      */
 
     public static void init() {
@@ -48,6 +51,8 @@ public class MainHelper {
             Stage addStage = new Stage();
             Stage removeStage = new Stage();
             Commit currentCommit = new Commit();
+            Remote remoteRepo = new Remote();
+            saveFile(remoteRepo, remotes);
             saveAsSHA1(currentCommit, commits, 6);
             saveFile(addStage, addStageFile);
             saveFile(removeStage, removeStageFile);
@@ -627,6 +632,111 @@ public class MainHelper {
         }
     }
 
+    public static void addRemote(String repoName, String repoAbsolutePath) {
+        Remote remoteRepo = (Remote) loadObject(remotes, Remote.class);
+        if (!remoteRepo.containsRemoteRepo(repoName)) {
+            remoteRepo.putRemoteRepo(repoName, repoAbsolutePath);
+            saveFile(remoteRepo, remotes);
+            return;
+        } else {
+            System.out.println("A remote with that name already exists.");
+            System.exit(0);
+        }
+    }
+
+    public static void rmRemote(String repoName) {
+        Remote remoteRepo = (Remote) loadObject(remotes, Remote.class);
+        if (remoteRepo.containsRemoteRepo(repoName)) {
+            remoteRepo.removeRemoteRepo(repoName);
+            saveFile(remoteRepo, remotes);
+            return;
+        } else {
+            System.out.println("A remote with that name does not exist.");
+            System.exit(0);
+        }
+    }
+
+    public static void push(String remoteName, String remoteBranch) {
+        Remote remoteRepo = (Remote) loadObject(remotes, Remote.class);
+        if (!remoteRepo.containsRemoteRepo(remoteName)) {
+            System.out.println("A remote with that name does not exist.");
+            System.exit(0);
+        }
+        String remoteRepoAbsolutePath = remoteRepo.getRemoteRepoPath(remoteName);
+        File remoteRepoFolder = new File(remoteRepoAbsolutePath);
+        if (!remoteRepoFolder.exists()) {
+            System.out.println("Remote directory not found.");
+            System.exit(0);
+        }
+        String currentLocalBranch = getHEADBranch();
+        String currentLocalCommitName = getBranchCommitName(currentLocalBranch);
+        Set localCommitAncestorNameSet = getCommitAncestorNameSet(currentLocalCommitName);
+        File remoteBranchFolder = join(remoteRepoFolder, "branches");
+        File currentRemoteBranch = join(remoteBranchFolder, remoteBranch);
+        String currentRemoteCommitName = loadString(currentRemoteBranch);
+        File remoteCommitFolder = join(remoteRepoFolder, "commits");
+        File currentRemoteCommitFile = join(remoteCommitFolder, currentRemoteCommitName.substring(0,6), currentRemoteCommitName);
+        if (!localCommitAncestorNameSet.contains(currentRemoteCommitName)) {
+            System.out.println("Please pull down remote changes before pushing.");
+            System.exit(0);
+            return;
+        }
+        Set<String> waitingCommitSet = getWaitingCommitSet(currentLocalCommitName, currentRemoteCommitName);
+        for (String commitName : waitingCommitSet) {
+            File commitFileOrigin = join(commits, commitName.substring(0,6), commitName);
+            File commitFileDuplicate = join(remoteCommitFolder, commitName.substring(0,6), commitName);
+            try {
+                Files.copy(commitFileOrigin.toPath(), commitFileDuplicate.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            Commit commitOrigin = getCommit(commitName);
+            Set<String> blobSet = commitOrigin.contentKeySet();
+            for (String blobName : waitingCommitSet) {
+                File blobFileOrigin = join(blobs, blobName);
+                File blobFileDuplicate = join(remoteRepoFolder, "blobs", blobName);
+                try {
+                    Files.copy(blobFileOrigin.toPath(), blobFileDuplicate.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                //Perhaps I want to modify all local functions, so they can
+                //interact with remote repository???
+                //Unfinished Remote functionality.
+            }
+        }
+    }
+
+    public static void fetch(String remoteName, String remoteBranchName) {
+        return;
+    }
+
+    public static void pull(String remoteName, String remoteBranchName) {
+        fetch(remoteName, remoteBranchName);
+        merge(remoteBranchName + "/" + remoteBranchName);
+
+    }
+    public static Set<String> getWaitingCommitSet(String commitName, String targetCommitName) {
+        Set<String> returnSet = new HashSet<>();
+        return getWaitingCommitSetRecursive(commitName, targetCommitName,returnSet);
+    }
+
+    public static Set<String> getWaitingCommitSetRecursive(String commitName, String targetCommitName, Set returnSet) {
+        Commit commit = getCommit(commitName);
+        if (commitName.equals(targetCommitName)) {
+            return returnSet;
+        } else if (commit.getParent() == null) {
+            return returnSet;
+        } else {
+            returnSet.add(commitName);
+            returnSet = getWaitingCommitSetRecursive(commit.getParent(), targetCommitName, returnSet);
+            if (commit instanceof mergedCommit) {
+                String secondParent = ((mergedCommit) commit).getSecondParent();
+                returnSet = getWaitingCommitSetRecursive(secondParent, targetCommitName, returnSet);
+            }
+            return returnSet;
+        }
+    }
     public static void putConflictContent(Blob currentBlob, Blob targetBlob, File file) {
         String writeString = "<<<<<<< HEAD\n";
         if (currentBlob != null) {

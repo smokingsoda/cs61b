@@ -12,6 +12,7 @@ import java.util.Date;
 
 import static testing.UnitTest.Utils.join;
 import static testing.UnitTest.Utils.sha1;
+import static org.junit.Assert.*;
 
 
 
@@ -37,7 +38,7 @@ public class test {
         Commit childCommit = (Commit)MainHelper.loadObject(join(commits, "6d6b7dade3f79a8d2bbe3e2cde917329de2fb964"), Commit.class);
     }
 
-    @Test
+    //@Test
     public void test3() {
         Stage addStage = (Stage) MainHelper.loadObject(addStageFile, Stage.class);
         Commit currentCommit = MainHelper.getHEADCommit();
@@ -46,20 +47,11 @@ public class test {
         //String SHA1 = sha1(HelloByte);
     }
 
-    //@Test
+    @Test
     public void test4() {
-        String[] args1 = {"add", "Hello.txt"};
-        String[] args2 = {"rm", "Hello.txt"};
-        Main.main(args1);
-        Main.main(args2);
+        File f1 = join(CWD, "Hello.txt");
+        File f2 = join(CWD, "hElLo.Txt");
+        assertTrue(f1.exists());
+        assertTrue(f2.exists());
     }
-
-    //@Test
-    public void test5() {
-        String[] args1 = {"add", "f.txt"};
-        Main.main(args1);
-        String[] args2 = {"add", "g.txt"};
-        Main.main(args2);
-    }
-
 }

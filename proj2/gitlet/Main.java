@@ -112,6 +112,31 @@ public class Main {
                 validateNumArgs("merge", args, 2);
                 MainHelper.merge(args[1]);
                 break;
+            case "add-remote":
+                validateGitletRepo();
+                validateNumArgs("add-remote", args, 3);
+                MainHelper.addRemote(args[1], args[2]);
+                break;
+            case "rm-remote":
+                validateGitletRepo();
+                validateNumArgs("rm-remote", args, 2);
+                MainHelper.rmRemote(args[1]);
+                break;
+            case "push":
+                validateGitletRepo();
+                validateNumArgs("push", args, 3);
+                MainHelper.push(args[1], args[2]);
+                break;
+            case "fetch":
+                validateGitletRepo();
+                validateNumArgs("fetch", args, 3);
+                MainHelper.fetch(args[1], args[2]);
+                break;
+            case "pull":
+                validateGitletRepo();
+                validateNumArgs("pull", args, 3);
+                MainHelper.pull(args[1], args[2]);
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 System.exit(0);
