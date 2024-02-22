@@ -55,7 +55,7 @@ public class HexWorld {
     }
 
     public static void drawWholeHelper(Position p, int hexagonLength, int worldLength, TETile[][] world, int count) {
-        if (count == worldLength - 1) {
+        if (count >= worldLength - 1) {
             drawHexagonColumn(p, hexagonLength, worldLength + count, world);
         } else {
             drawHexagonColumn(p, hexagonLength, worldLength + count, world);
@@ -66,45 +66,60 @@ public class HexWorld {
         }
     }
     public static void drawHexagonColumn(Position p, int hexagonLength, int hexagonNum, TETile[][] world) {
-        for (int i = 0; i < hexagonNum; i++) {
-            addHexagon(p, hexagonLength, world, randomTile());
-        }
+        drawHexagonColumnHelper(p, hexagonLength, hexagonNum, world, 1);
         p.shiftBy(0, 2 * hexagonLength * hexagonNum);
+    }
+
+    public static void drawHexagonColumnHelper(Position p, int hexagonLength, int hexagonNum, TETile[][] world, int count) {
+        if (count > hexagonNum) {
+            return;
+        } else {
+            addHexagon(p, hexagonLength, world, randomTile());
+            p.shiftBy(0, -2 * hexagonLength);
+            drawHexagonColumnHelper(p, hexagonLength, hexagonNum, world, count + 1);
+        }
     }
     public static void addHexagon(Position p, int length, TETile[][] world, TETile tile) {
         addHexagonHelper(p, length - 1, length, world, tile);
+        p.shiftBy(0, 2 * length - 1);
     }
 
     public static void addHexagonHelper(Position p, int blank, int length, TETile[][] world, TETile tile) {
         if (blank < 0) {
+            p.shiftBy(0, 1);
             return;
         }
         else {
             drawRow(p, blank, length, world, tile);
+            p.shiftBy(0, -1);
             addHexagonHelper(p, blank - 1, length + 2, world, tile);
+            p.shiftBy(0, -1);
             drawRow(p, blank, length, world, tile);
         }
     }
     public static void drawRow(Position p, int blank, int length, TETile[][] world, TETile tile) {
-        for (int i = 0; i < length; i++) {
-            world[p.x + blank + i][p.y] = tile;
-        }
-        p.shiftBy(0, -1);
+        drawRowHelper(p, blank, length, world, tile, 1);
     }
 
     public static void drawRowHelper(Position p, int blank, int length, TETile[][] world, TETile tile, int count) {
-        
+        if (count > length) {
+            p.shiftBy(-length, 0);
+            return;
+        } else {
+            world[p.x + blank][p.y] = tile;
+            p.shiftBy(1, 0);
+            drawRowHelper(p, blank, length, world, tile, count + 1);
+        }
     }
     public static void drawWorld(TETile[][] world) {
         // initialize tiles
-
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
                 world[x][y] = Tileset.NOTHING;
             }
         }
-        Position p = new Position(10, 30);
-        drawWhole(p, 3,3, world);
+        Position p = new Position(10, 40);
+        drawWhole(p, 3, 3, world);
     }
     public static void main(String[] args) {
         // initialize the tile rendering engine with a window of size WIDTH x HEIGHT
