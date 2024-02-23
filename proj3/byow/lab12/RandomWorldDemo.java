@@ -13,7 +13,7 @@ public class RandomWorldDemo {
     private static final int WIDTH = 50;
     private static final int HEIGHT = 50;
 
-    private static final long SEED = 2873123;
+    private static final long SEED = 332133321;
     private static final Random RANDOM = new Random(SEED);
 
     /**
@@ -47,10 +47,8 @@ public class RandomWorldDemo {
     public static void main(String[] args) {
         TERenderer ter = new TERenderer();
         ter.initialize(WIDTH, HEIGHT);
-
         TETile[][] randomTiles = new TETile[WIDTH][HEIGHT];
         fillWithRandomTiles(randomTiles);
-
         ter.renderFrame(randomTiles);
     }
 
