@@ -56,7 +56,7 @@ public class Engine {
         // that works for many different input types.
         ter.initialize(WIDTH, HEIGHT);
         input = input.substring(1, input.length() - 1);
-        this.RANDOM = new Random(Integer.parseInt(input));
+        this.RANDOM = new Random(Long.parseLong(input));
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
