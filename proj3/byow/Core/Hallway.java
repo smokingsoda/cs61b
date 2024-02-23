@@ -5,22 +5,21 @@ import byow.TileEngine.Tileset;
 
 public class Hallway implements WorldObj {
     private int length;
-    private int width = 1;
+    private int width;
     public Position startPosition;
     public Direction direction;
     public Position endPosition;
 
-    public Hallway(int length, Position position, Direction direction, TETile[][] world) {
+    public Hallway(int length, int width, Position position, Direction direction, TETile[][] world) {
         this.length = length;
+        this.width = width;
         this.startPosition = position;
         this.direction = direction;
         this.endPosition = getEndPosition(world);
     }
 
-    public Position drawHallway(TETile[][] world) {
+    public void drawHallway(TETile[][] world) {
         drawFloor(world);
-        drawWall(world);
-        return endPosition;
     }
 
     private Position getEndPosition(TETile[][] world) {
@@ -61,15 +60,10 @@ public class Hallway implements WorldObj {
             drawRow(direction.vertical * i, direction.lateral * i, world, Tileset.FLOOR);
         }
     }
-    private void drawWall(TETile[][] world) {
-        drawRow(direction.vertical * width, direction.lateral * width, world, Tileset.WALL);
-        drawRow(-direction.vertical, -direction.lateral, world, Tileset.WALL);
-    }
 
     @Override
      public boolean isCollision(int x, int y, TETile[][] world) {
         return x > world.length - 1 || y > world[0].length - 1
                || x < 0 || y < 0;
-
     }
 }

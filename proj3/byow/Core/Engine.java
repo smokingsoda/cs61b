@@ -5,7 +5,6 @@ import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
 
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
 
 public class Engine {
@@ -13,8 +12,10 @@ public class Engine {
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 40;
-    private static final Random RANDOM = new Random(38);
-    private static final int MAX_HALLWAY_LENGTH = 10;
+    private Random RANDOM;
+    private static final int MAX_HALLWAY_LENGTH = 35;
+    private static final int MAX_HALLWAY_NUM = 60;
+    private static final int MAX_HALLWAY_WIDTH = 1;
 
     public Engine() {
         ter.initialize(WIDTH, HEIGHT);
@@ -56,45 +57,51 @@ public class Engine {
         //
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
+        this.RANDOM = new Random(Integer.parseInt(input));
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
                 finalWorldFrame[x][y] = Tileset.NOTHING;
             }
         }
-        Position p = new Position(20, 20);
-        int num1 = RANDOM.nextInt(10);
-        int num2 = RANDOM.nextInt(10);
-        int HallwayNum = num1 * num2;
+        Position p = new Position(RANDOM.nextInt(WIDTH), RANDOM.nextInt(HEIGHT));
+        int HallwayNum = RANDOM.nextInt(MAX_HALLWAY_NUM) + 1;
         LinkedList<Hallway> lH = new LinkedList<>();
-        LinkedList<Corner> lC = new LinkedList<>();
         for (int i = 0; i < HallwayNum; i++) {
             Hallway h = randomHallway(p, finalWorldFrame);
             lH.add(h);
             p = h.endPosition;
         }
-        for (int i = 0; i < HallwayNum - 1; i++) {
-            Hallway pH = lH.get(i);
-            Hallway nH = lH.get(i + 1);
-            Corner c = new Corner(pH, nH, pH.endPosition);
-            lC.add(c);
-        }
         for (Hallway h : lH) {
             h.drawHallway(finalWorldFrame);
-            ter.renderFrame(finalWorldFrame);
         }
-        for (Corner c : lC) {
-            c.drawCorner(finalWorldFrame);
-            ter.renderFrame(finalWorldFrame);
-        }
+        Wall wall = new Wall();
+        wall.drawWall(finalWorldFrame);
         ter.renderFrame(finalWorldFrame);
         return finalWorldFrame;
     }
+    public void drawWall(int x, int y, TETile[][] world) {
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+                if (i == 0 && j == 0) {
+                    continue;
+                }
+                if (!isCollision(x + i, y + j, world) && world[x + i][y + j].equals(Tileset.NOTHING)) {
+                    world[x + i][y + j] = Tileset.WALL;
+                }
+            }
+        }
+    }
+    public boolean isCollision(int x, int y, TETile[][] world) {
+        return x > world.length - 1 || y > world[0].length - 1
+                || x < 0 || y < 0;
+    }
 
     public Hallway randomHallway(Position p, TETile[][] world) {
-        int length = RANDOM.nextInt(MAX_HALLWAY_LENGTH) + 5;
+        int length = RANDOM.nextInt(MAX_HALLWAY_LENGTH) + 1;
+        int width = RANDOM.nextInt(MAX_HALLWAY_WIDTH) + 1;
         Direction d = randomDirection();
-        return new Hallway(length, p, d, world);
+        return new Hallway(length, width, p, d, world);
     }
 
     public Direction randomDirection() {
