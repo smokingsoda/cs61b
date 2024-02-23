@@ -54,7 +54,7 @@ public class Engine {
         //
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
-        ter.initialize(WIDTH, HEIGHT);
+        //ter.initialize(WIDTH, HEIGHT);
         input = input.substring(1, input.length() - 1);
         this.RANDOM = new Random(Long.parseLong(input));
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
@@ -76,7 +76,7 @@ public class Engine {
         }
         Wall wall = new Wall();
         wall.drawWall(finalWorldFrame);
-        ter.renderFrame(finalWorldFrame);
+        //ter.renderFrame(finalWorldFrame);
         return finalWorldFrame;
     }
     public void drawWall(int x, int y, TETile[][] world) {
