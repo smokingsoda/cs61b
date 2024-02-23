@@ -17,9 +17,6 @@ public class Engine {
     private static final int MAX_HALLWAY_NUM = 60;
     private static final int MAX_HALLWAY_WIDTH = 1;
 
-    public Engine() {
-        ter.initialize(WIDTH, HEIGHT);
-    }
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -57,6 +54,7 @@ public class Engine {
         //
         // See proj3.byow.InputDemo for a demo of how you can make a nice clean interface
         // that works for many different input types.
+        ter.initialize(WIDTH, HEIGHT);
         input = input.substring(1, input.length() - 1);
         this.RANDOM = new Random(Integer.parseInt(input));
         TETile[][] finalWorldFrame = new TETile[WIDTH][HEIGHT];
