@@ -84,7 +84,8 @@ public class Engine {
         playGame();
     }
     public void loadGame() {
-        File loadFile = join(DIR, "save");
+        File loadFolder = join(DIR, "save");
+        File loadFile = join(loadFolder, "archive");
         this.finalWorldFrame = readObject(loadFile, World.class);
         playGame();
     }
@@ -110,7 +111,9 @@ public class Engine {
         }
     }
     public void saveGame() {
-        File saveFile = join(DIR, "save");
+        File saveFolder = join(DIR, "save");
+        saveFolder.mkdir();
+        File saveFile = join(saveFolder, "archive");
         writeObject(saveFile, this.finalWorldFrame);
     }
     public void updateWorld(TETile[][] world) {
@@ -153,7 +156,7 @@ public class Engine {
         while(source.hasNext()) {
             if (isVisual) {
                 StdDraw.clear(Color.BLACK);
-                StdDraw.text(WIDTH/2, HEIGHT/2, "Seed: " + seed);
+                StdDraw.text(WIDTH / 2, HEIGHT / 2, "Seed: " + seed);
                 StdDraw.show();
             }
 
