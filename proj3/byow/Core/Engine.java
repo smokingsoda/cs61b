@@ -84,7 +84,8 @@ public class Engine {
         playGame();
     }
     public void loadGame() {
-        File loadFolder = join(DIR, "save");
+        File boywFolder = join(DIR, "byow");
+        File loadFolder = join(boywFolder, "save");
         File loadFile = join(loadFolder, "archive");
         this.finalWorldFrame = readObject(loadFile, World.class);
         playGame();
@@ -111,7 +112,8 @@ public class Engine {
         }
     }
     public void saveGame() {
-        File saveFolder = join(DIR, "save");
+        File byowFolder = join(DIR, "byow");
+        File saveFolder = join(byowFolder, "save");
         saveFolder.mkdir();
         File saveFile = join(saveFolder, "archive");
         writeObject(saveFile, this.finalWorldFrame);
