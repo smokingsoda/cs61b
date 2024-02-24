@@ -84,9 +84,7 @@ public class Engine {
         playGame();
     }
     public void loadGame() {
-        File boywFolder = join(DIR, "byow");
-        File loadFolder = join(boywFolder, "save");
-        File loadFile = join(loadFolder, "archive");
+        File loadFile= join(DIR, "byow.txt");
         this.finalWorldFrame = readObject(loadFile, World.class);
         playGame();
     }
@@ -112,10 +110,7 @@ public class Engine {
         }
     }
     public void saveGame() {
-        File byowFolder = join(DIR, "byow");
-        File saveFolder = join(byowFolder, "save");
-        saveFolder.mkdir();
-        File saveFile = join(saveFolder, "archive");
+        File saveFile = join(DIR, "byow.txt");
         writeObject(saveFile, this.finalWorldFrame);
     }
     public void updateWorld(TETile[][] world) {
