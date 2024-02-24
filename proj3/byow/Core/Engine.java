@@ -121,7 +121,7 @@ public class Engine {
         for (Position p : finalWorldFrame.wallSet) {
             finalWorldFrame.world[p.x][p.y] = Tileset.WALL;
         }
-        entityBFS();
+        //entityBFS();
         finalWorldFrame.world[finalWorldFrame.entityPosition.x][finalWorldFrame.entityPosition.y] = Tileset.FLOWER;
         finalWorldFrame.world[finalWorldFrame.avatarPosition.x][finalWorldFrame.avatarPosition.y] = Tileset.AVATAR;
         if (isVisual) {
