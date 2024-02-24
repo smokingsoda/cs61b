@@ -1,6 +1,8 @@
 package byow.Core;
 
-public class Position {
+import java.io.Serializable;
+
+public class Position implements Serializable {
     public int x;
     public int y;
 
@@ -8,7 +10,8 @@ public class Position {
         this.x = x;
         this.y = y;
     }
-    public Position shift(int dx, int dy) {
-        return new Position(this.x + dx, this.y + dy);
+    @Override
+    public String toString() {
+        return "(" + x + ", " + y + ")";
     }
 }

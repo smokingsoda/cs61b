@@ -6,12 +6,14 @@ import byow.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
+import java.io.File;
 import java.util.*;
+
+import static byow.Core.Utility.*;
+
 
 public class Engine {
     TERenderer ter = new TERenderer();
-    public ArrayList<Position> floorList;
-    public ArrayList<Position> wallList;
     /* Feel free to change the width and height. */
     public static final int WIDTH = 40;
     public static final int HEIGHT = 40;
@@ -22,10 +24,10 @@ public class Engine {
     private static final Font BIG_FONT = new Font("Monaco", Font.BOLD, 30);
     private static final Font SMALL_FONT = new Font("Monaco", Font.BOLD, 15);
     private inputSource source;
-    private Position avatarPosition;
     private static final HashMap<String, Direction> directions = new HashMap<>();
     private boolean isVisual = false;
-    private World finalWorldFrame;
+    public World finalWorldFrame;
+    private static final File DIR = new File(System.getProperty("user.dir"));
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
      * including inputs from the main menu.
@@ -59,10 +61,13 @@ public class Engine {
             char c = source.next();
             if (c == 'n') {
                 newGame();
+                break;
             } else if (c == 'l') {
                 loadGame();
+                break;
             } else if (c == 'q') {
                 quitGame();
+                break;
             }
         }
     }
@@ -74,14 +79,19 @@ public class Engine {
             ter.initialize(WIDTH, HEIGHT);
             StdDraw.clear(Color.BLACK);
         }
-        TETile[][] world = new TETile[WIDTH][HEIGHT];
-        this.finalWorldFrame = new World(world);
+        finalWorldFrame = new World(new TETile[WIDTH][HEIGHT], new Position(0, 0));
         initializeWorld();
         playGame();
     }
+    public void loadGame() {
+        File loadFile = join(DIR, "save");
+        this.finalWorldFrame = readObject(loadFile, World.class);
+        playGame();
+    }
+
     public void playGame() {
         HashSet validateOperation = new HashSet<>();
-        char[] charsOp = new char[]{'w', 'a', 's', 'd', 'q', '.'};
+        char[] charsOp = new char[]{'w', 'a', 's', 'd', 'q', ':'};
         for (char op : charsOp) {
             validateOperation.add(op);
         }
@@ -89,17 +99,20 @@ public class Engine {
             updateWorld(this.finalWorldFrame.world);
             char c = source.next();
             if (validateOperation.contains(c)) {
-                if (c == '.' && source.hasNext() && source.next() == 'q') {
+                if (c == ':' && source.hasNext() && source.next() == 'q') {
+                    saveGame();
                     break;
                 } else {
-                    System.out.println(c);
                     move(c);
                 }
             }
 
         }
     }
-
+    public void saveGame() {
+        File saveFile = join(DIR, "save");
+        writeObject(saveFile, this.finalWorldFrame);
+    }
     public void updateWorld(TETile[][] world) {
         if (isVisual) {
             ter.renderFrame(world);
@@ -121,13 +134,14 @@ public class Engine {
             case 'd':
                 direction = directions.get("right");
         }
-        int newX = avatarPosition.x + direction.lateral;
-        int newY = avatarPosition.y + direction.vertical;
+        int newX = finalWorldFrame.avatarPosition.x + direction.lateral;
+        int newY = finalWorldFrame.avatarPosition.y + direction.vertical;
         if (canMove(newX, newY)) {
-            this.finalWorldFrame.world[avatarPosition.x][avatarPosition.y] = Tileset.FLOOR;
-            avatarPosition.x = newX;
-            avatarPosition.y = newY;
+            this.finalWorldFrame.world[finalWorldFrame.avatarPosition.x][finalWorldFrame.avatarPosition.y] = Tileset.FLOOR;
+            finalWorldFrame.avatarPosition.x = newX;
+            finalWorldFrame.avatarPosition.y = newY;
             this.finalWorldFrame.world[newX][newY] = Tileset.AVATAR;
+            System.out.println(finalWorldFrame.avatarPosition);
         }
     }
     public void extractSeed() {
@@ -152,9 +166,6 @@ public class Engine {
                 seed = seed + c;
             }
         }
-    }
-    public void loadGame() {
-
     }
 
     public void quitGame() {
@@ -222,8 +233,8 @@ public class Engine {
         }
         Wall wall = new Wall();
         wall.drawWall(this.finalWorldFrame.world);
-        this.floorList = new ArrayList<>();
-        this.wallList = new ArrayList<>();
+        ArrayList<Position> floorList = new ArrayList<>();
+        ArrayList<Position> wallList = new ArrayList<>();
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
                 if (this.finalWorldFrame.world[x][y].equals(Tileset.FLOOR)) {
@@ -241,7 +252,7 @@ public class Engine {
     public void addAvatar(ArrayList<Position> floorList) {
         Position position = floorList.get(RANDOM.nextInt(floorList.size()));
         this.finalWorldFrame.world[position.x][position.y] = Tileset.AVATAR;
-        this.avatarPosition = position;
+        finalWorldFrame.avatarPosition = position;
     }
     public void addGate(ArrayList<Position> wallList) {
         Position position = wallList.get(RANDOM.nextInt(wallList.size()));
