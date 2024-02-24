@@ -79,7 +79,7 @@ public class Engine {
             ter.initialize(WIDTH, HEIGHT);
             StdDraw.clear(Color.BLACK);
         }
-        finalWorldFrame = new World(new TETile[WIDTH][HEIGHT], new Position(0, 0));
+        finalWorldFrame = new World(new TETile[WIDTH][HEIGHT], new Position(0, 0), new Position(0, 0));
         initializeWorld();
         playGame();
     }
@@ -96,7 +96,7 @@ public class Engine {
             validateOperation.add(op);
         }
         while(source.hasNext()) {
-            updateWorld(this.finalWorldFrame.world);
+            updateWorld();
             char c = source.next();
             if (validateOperation.contains(c)) {
                 if (c == ':' && source.hasNext() && source.next() == 'q') {
@@ -104,6 +104,7 @@ public class Engine {
                     break;
                 } else {
                     move(c);
+
                 }
             }
 
@@ -113,9 +114,18 @@ public class Engine {
         File saveFile = join(DIR, "byow.txt");
         writeObject(saveFile, this.finalWorldFrame);
     }
-    public void updateWorld(TETile[][] world) {
+    public void updateWorld() {
+        for (Position p : finalWorldFrame.floorSet) {
+            finalWorldFrame.world[p.x][p.y] = Tileset.FLOOR;
+        }
+        for (Position p : finalWorldFrame.wallSet) {
+            finalWorldFrame.world[p.x][p.y] = Tileset.WALL;
+        }
+        entityBFS();
+        finalWorldFrame.world[finalWorldFrame.entityPosition.x][finalWorldFrame.entityPosition.y] = Tileset.FLOWER;
+        finalWorldFrame.world[finalWorldFrame.avatarPosition.x][finalWorldFrame.avatarPosition.y] = Tileset.AVATAR;
         if (isVisual) {
-            ter.renderFrame(world);
+            ter.renderFrame(finalWorldFrame.world);
         }
 
     }
@@ -140,8 +150,7 @@ public class Engine {
             this.finalWorldFrame.world[finalWorldFrame.avatarPosition.x][finalWorldFrame.avatarPosition.y] = Tileset.FLOOR;
             finalWorldFrame.avatarPosition.x = newX;
             finalWorldFrame.avatarPosition.y = newY;
-            this.finalWorldFrame.world[newX][newY] = Tileset.AVATAR;
-            System.out.println(finalWorldFrame.avatarPosition);
+            //System.out.println(finalWorldFrame.avatarPosition);
         }
     }
     public void extractSeed() {
@@ -233,30 +242,104 @@ public class Engine {
         }
         Wall wall = new Wall();
         wall.drawWall(this.finalWorldFrame.world);
-        ArrayList<Position> floorList = new ArrayList<>();
-        ArrayList<Position> wallList = new ArrayList<>();
+        finalWorldFrame.floorSet = new HashSet<>();
+        finalWorldFrame.wallSet = new HashSet<>();
         for (int x = 0; x < WIDTH; x += 1) {
             for (int y = 0; y < HEIGHT; y += 1) {
                 if (this.finalWorldFrame.world[x][y].equals(Tileset.FLOOR)) {
-                    floorList.add(new Position(x, y));
+                    finalWorldFrame.floorSet.add(new Position(x, y));
                 } else if (this.finalWorldFrame.world[x][y].equals(Tileset.WALL)) {
-                    wallList.add(new Position(x, y));
+                    finalWorldFrame.wallSet.add(new Position(x, y));
                 }
             }
         }
-        addAvatar(floorList);
-        addGate(wallList);
-
-        //ter.renderFrame(finalWorldFrame);
+        addAvatar();
+        //addGate(finalWorldFrame.wallList);
+        addEntity();
+        updateWorld();
     }
-    public void addAvatar(ArrayList<Position> floorList) {
-        Position position = floorList.get(RANDOM.nextInt(floorList.size()));
-        this.finalWorldFrame.world[position.x][position.y] = Tileset.AVATAR;
-        finalWorldFrame.avatarPosition = position;
+    public void addAvatar() {
+        int random = RANDOM.nextInt(finalWorldFrame.floorSet.size());
+        for (Position position : finalWorldFrame.floorSet) {
+            if (random == 0) {
+                finalWorldFrame.avatarPosition = position;
+                break;
+            } else {
+                random -= 1;
+            }
+        }
+        finalWorldFrame.floorSet.add(finalWorldFrame.avatarPosition);
     }
     public void addGate(ArrayList<Position> wallList) {
         Position position = wallList.get(RANDOM.nextInt(wallList.size()));
         this.finalWorldFrame.world[position.x][position.y] = Tileset.LOCKED_DOOR;
+    }
+    public void addEntity() {
+        int random = RANDOM.nextInt(finalWorldFrame.floorSet.size());
+        for (Position position : finalWorldFrame.floorSet) {
+            if (random == 0) {
+                finalWorldFrame.entityPosition = position;
+                break;
+            } else {
+                random -= 1;
+            }
+        }
+        finalWorldFrame.floorSet.add(finalWorldFrame.entityPosition);
+    }
+    public void entityBFS() {
+        HashSet<Position> floorSet = new HashSet<>();
+        for (Position p : finalWorldFrame.floorSet) {
+            floorSet.add(p);
+
+        }
+        HashMap<Position, Position> edgeMap = new HashMap<>();
+        HashMap<Position, Integer> distMap = new HashMap<>();
+        PriorityQueue<Pair> fringe = new PriorityQueue<>();
+        for (Position fP : floorSet) {
+            Pair pair = new Pair(fP, Integer.MAX_VALUE);
+            edgeMap.put(fP, null);
+            if (fP.equals(finalWorldFrame.entityPosition)) {
+                distMap.put(fP, 0);
+                pair.value = 0;
+                fringe.add(pair);
+            } else {
+                distMap.put(fP, Integer.MAX_VALUE);
+                fringe.add(pair);
+            }
+        }
+        while (fringe.size() != 0) {
+            Pair currentPair = fringe.poll();
+            int x = currentPair.key.x;
+            int y = currentPair.key.y;
+            int distantS = currentPair.value;
+            ArrayList<Position> udlf = new ArrayList<>();
+            udlf.add(new Position(x + 1, y));
+            udlf.add(new Position(x - 1, y));
+            udlf.add(new Position(x, y - 1));
+            udlf.add(new Position(x, y + 1));
+            for (Position currentPosition : udlf) {
+                if (floorSet.contains(currentPosition) && distMap.containsKey(currentPosition)) {
+                    int distant = distMap.get(currentPosition);
+                    if (distantS + 1 < distant) {
+                        Pair newPair = new Pair(currentPosition, distMap.get(currentPosition));
+                        fringe.remove(newPair);
+                        distMap.put(currentPosition, distantS);
+                        newPair.value = distantS;
+                        fringe.add(newPair);
+                        edgeMap.put(currentPosition, currentPair.key);
+                    }
+                }
+            }
+        }
+        Position p = finalWorldFrame.avatarPosition;
+        while (!p.equals(finalWorldFrame.entityPosition)) {
+            Position targetPosition = edgeMap.get(p);
+            if (targetPosition == null) {
+                break;
+            }
+            finalWorldFrame.world[targetPosition.x][targetPosition.y] = Tileset.GRASS;
+            p = targetPosition;
+        }
     }
     public Hallway randomHallway(Position p, TETile[][] world) {
         int length = RANDOM.nextInt(MAX_HALLWAY_LENGTH) + 1;
@@ -278,6 +361,7 @@ public class Engine {
 
     public boolean canMove(int x, int y) {
         return x >= 0 && x < WIDTH && y >= 0
-                && y < HEIGHT && this.finalWorldFrame.world[x][y].equals(Tileset.FLOOR);
+                && y < HEIGHT &&
+                (this.finalWorldFrame.world[x][y].equals(Tileset.FLOOR) || this.finalWorldFrame.world[x][y].equals(Tileset.GRASS)|| this.finalWorldFrame.world[x][y].equals(Tileset.FLOWER));
     }
 }

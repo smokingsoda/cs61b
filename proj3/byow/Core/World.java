@@ -2,16 +2,20 @@ package byow.Core;
 
 
 import byow.TileEngine.TETile;
-import byow.TileEngine.Tileset;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class World implements Serializable {
     public TETile[][] world;
     public Position avatarPosition;
-    public World(TETile[][] tiles, Position avatar) {
+    public Position entityPosition;
+    public HashSet<Position> floorSet;
+    public HashSet<Position> wallSet;
+    public World(TETile[][] tiles, Position avatar, Position entity) {
         this.world = tiles;
         this.avatarPosition = avatar;
+        this.entityPosition = entity;
     }
 }

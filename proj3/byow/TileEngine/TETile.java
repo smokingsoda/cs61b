@@ -28,6 +28,7 @@ public class TETile implements Serializable {
     private final Color backgroundColor;
     private final String description;
     private final String filepath;
+    private final boolean canStep = false;
 
     /**
      * Full constructor for TETile objects.
