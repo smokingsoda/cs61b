@@ -198,7 +198,7 @@ public class Model extends Observable {
         return mergeMoveDistance;
     }
     public boolean colOperator(int col){
-        int[] distance = new int[this.board.size()];
+/*        int[] distance = new int[this.board.size()];
         boolean changed = false;
         ArrayList<Integer> nullMoveDistance = nullMove(col);
         ArrayList<Integer> mergeMoveDistance = mergeMove(col);
@@ -212,6 +212,19 @@ public class Model extends Observable {
 
             }
             count -= 1;
+        }
+        return changed;*/
+        int[] distance = new int[this.board.size()];
+        boolean changed = false;
+        distance = getDistance(col, distance);
+        for (int row = this.board.size() - 1; row >= 0 ; row--) {
+            if (distance[row] != 0 && !isNulltile(col, row)){
+                changed = true;
+                if (isMerge(col, row + distance[row], this.board.tile(col, row))) {
+                    this.score = this.score + this.board.tile(col, row).value() * 2;
+                }
+                this.board.move(col, row + distance[row], this.board.tile(col, row));
+            }
         }
         return changed;
     }
