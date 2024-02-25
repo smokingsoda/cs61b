@@ -2,7 +2,6 @@ package game2048;
 
 import java.util.ArrayList;
 import java.util.Formatter;
-import java.util.LinkedList;
 import java.util.Observable;
 
 
