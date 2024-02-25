@@ -25,7 +25,7 @@ public class Position implements Serializable, Comparable<Position> {
 
     @Override
     public int hashCode() {
-        return (53 + x) * 53 + y;
+        return x + y;
     }
 
     @Override

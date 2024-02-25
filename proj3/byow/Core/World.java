@@ -4,7 +4,6 @@ package byow.Core;
 import byow.TileEngine.TETile;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 public class World implements Serializable {
@@ -17,5 +16,7 @@ public class World implements Serializable {
         this.world = tiles;
         this.avatarPosition = avatar;
         this.entityPosition = entity;
+        this.floorSet = new HashSet<>();
+        this.wallSet = new HashSet<>();
     }
 }
