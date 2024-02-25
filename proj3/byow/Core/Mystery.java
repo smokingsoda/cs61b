@@ -8,6 +8,6 @@ public class Mystery {
 
     @Override
     public int hashCode() {
-        return ttt.RANDOM.nextInt(498080);
+        return 1;
     }
 }

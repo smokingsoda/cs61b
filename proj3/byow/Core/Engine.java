@@ -127,9 +127,6 @@ public class Engine {
         if (isVisual) {
             ter.renderFrame(finalWorldFrame.world);
         }
-        System.out.println(this.finalWorldFrame.world[27][30]);
-        System.out.println(this.finalWorldFrame.floorSet.contains(new Position(27,30)));
-
     }
     public void move(char operation) {
         Direction direction = new Direction(0, 0);
@@ -151,7 +148,6 @@ public class Engine {
         if (canMove(newX, newY)) {
             this.finalWorldFrame.world[finalWorldFrame.avatarPosition.x][finalWorldFrame.avatarPosition.y] = Tileset.FLOOR;
             finalWorldFrame.avatarPosition = new Position(newX, newY);
-            System.out.println(finalWorldFrame.avatarPosition + "qqq");
         }
     }
     public void extractSeed() {
@@ -277,7 +273,7 @@ public class Engine {
         int random = RANDOM.nextInt(finalWorldFrame.floorSet.size());
         for (Position position : finalWorldFrame.floorSet) {
             if (random == 0) {
-                finalWorldFrame.entityPosition = position;
+                finalWorldFrame.entityPosition = new Position(position.x, position.y);
                 break;
             } else {
                 random -= 1;
@@ -286,32 +282,20 @@ public class Engine {
         //finalWorldFrame.floorSet.add(finalWorldFrame.entityPosition);
     }
     public void entityBFS() {
-//        HashSet<Position> floorSet = new HashSet<>();
-//        for (int i = 0; i < finalWorldFrame.world.length; i++) {
-//            for (int j = 0; j < finalWorldFrame.world[0].length; j++) {
-//                if (finalWorldFrame.world[i][j].equals(Tileset.FLOOR)) {
-//                    floorSet.add(new Position(i, j));
-//                }
-//            }
-//        }
-//        for (Position p : finalWorldFrame.floorSet) {
-//            floorSet.add(p);
-//
-//        }
         HashMap<Position, Position> edgeMap = new HashMap<>();
         HashMap<Position, Integer> distMap = new HashMap<>();
         PriorityQueue<Pair> fringe = new PriorityQueue<>();
         for (Position fP : finalWorldFrame.floorSet) {
-            Pair pair = new Pair(fP, 10000);
-            edgeMap.put(fP, null);
+            Pair pair;
             if (fP.equals(finalWorldFrame.entityPosition)) {
+                pair = new Pair(fP, 0);
                 distMap.put(fP, 0);
-                pair.value = 0;
-                fringe.add(pair);
             } else {
-                distMap.put(fP, 10000);
-                fringe.add(pair);
+                pair = new Pair(fP, Integer.MAX_VALUE);
+                distMap.put(fP, Integer.MAX_VALUE);
             }
+            fringe.add(pair);
+            edgeMap.put(fP, null);
         }
         while (fringe.size() != 0) {
             Pair currentPair = fringe.poll();
@@ -333,7 +317,7 @@ public class Engine {
                         distMap.put(currentPosition, sourceDistanceToRoot + 1);
                         //Don't forget to plus 1!!! That's crucial!
                         fringe.add(newPair);
-                        edgeMap.put(currentPosition, sourcePosition);
+                        edgeMap.put(currentPosition, new Position(sourcePosition.x, sourcePosition.y));
                     }
                 }
             }
