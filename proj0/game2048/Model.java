@@ -1,5 +1,6 @@
 package game2048;
 
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Observable;
 
@@ -115,7 +116,7 @@ public class Model extends Observable {
         // changed local variable to true.
         //b.tile(col, row)
         for (int col = 0; col < this.board.size(); col++) {
-            if(colOperator(col)){
+            if (colOperator(col)){
                 changed = true;
             };
         }
@@ -127,18 +128,90 @@ public class Model extends Observable {
         return changed;
     }
 
+    public ArrayList<Integer> nullMove(int col) {
+        ArrayList<Integer> nullMoveDistance = new ArrayList<>();
+        int count = 0;
+        for (int row = this.board.size() - 1; row >= 0 ; row--) {
+            if (!isNulltile(col, row)) {
+                nullMoveDistance.addLast(count);
+            } else {
+                nullMoveDistance.addLast(0);
+                count += 1;
+            }
+        }
+        return nullMoveDistance;
+    }
+    public ArrayList<Integer> mergeMove(int col) {
+        ArrayList<Integer> mergeMoveDistance = new ArrayList<>();
+        ArrayList<Integer> numberQueue = new ArrayList<>();
+        ArrayList<Boolean> isMergedQueue = new ArrayList<>();
+        for (int row = this.board.size() - 1; row >= 0 ; row--) {
+            isMergedQueue.addLast(false);
+            if (!isNulltile(col, row)) {
+                numberQueue.addLast(this.board.tile(col, row).value());
+            }
+            else {
+                numberQueue.addLast(0);
+            }
+        }
+        int count = 0;
+        while(!numberQueue.isEmpty() && !isMergedQueue.isEmpty()) {
+            int currentNumber = numberQueue.removeFirst();
+            boolean currentIsMergedFlag = isMergedQueue.removeFirst();
+            ArrayList<Integer> temNum = new ArrayList<>();
+            for (int n : numberQueue) {
+                temNum.addLast(n);
+            }
+            if (currentNumber == 0) {
+                mergeMoveDistance.addLast(0);
+            } else {
+                if (!currentIsMergedFlag) {
+                    ArrayList<Boolean> temFlag = new ArrayList<>();
+                    boolean mergeFlag = false;
+                    while(!temNum.isEmpty()) {
+                        int Num = temNum.removeFirst();
+                        temFlag.addLast(isMergedQueue.removeFirst());
+                        if (Num != 0 && currentNumber != Num) {break;}
+                        else if (currentNumber == Num) {
+                            temFlag.removeLast();
+                            temFlag.addLast(true);
+                            mergeFlag = true;
+                            break;
+                        }
+                    }
+                    while(!temFlag.isEmpty()) {
+                        isMergedQueue.addFirst(temFlag.removeLast());
+                    }
+                    if (mergeFlag) {
+                        mergeMoveDistance.addLast(count);
+                        count += 1;
+                        this.score = this.score + currentNumber * 2;
+                    } else {
+                        mergeMoveDistance.addLast(count);
+                    }
+                }
+                else {
+                    mergeMoveDistance.addLast(count);
+                }
+            }
+        }
+        return mergeMoveDistance;
+    }
     public boolean colOperator(int col){
         int[] distance = new int[this.board.size()];
         boolean changed = false;
-        distance = getDistance(col, distance);
-        for (int row = this.board.size() - 1; row >= 0 ; row--) {
-            if (distance[row] != 0 && !isNulltile(col, row)){
+        ArrayList<Integer> nullMoveDistance = nullMove(col);
+        ArrayList<Integer> mergeMoveDistance = mergeMove(col);
+        int count = this.board.size() - 1;
+        while(!nullMoveDistance.isEmpty() && !mergeMoveDistance.isEmpty()) {
+            int n = nullMoveDistance.removeFirst() + mergeMoveDistance.removeFirst();
+            distance[count] = n;
+            if (n != 0) {
                 changed = true;
-                if (isMerge(col, row + distance[row], this.board.tile(col, row))) {
-                    this.score = this.score + this.board.tile(col, row).value() * 2;
-                }
-                this.board.move(col, row + distance[row], this.board.tile(col, row));
+                this.board.move(col, count + n, this.board.tile(col, count));
+
             }
+            count -= 1;
         }
         return changed;
     }
@@ -256,10 +329,10 @@ public class Model extends Observable {
         for (int i = 0; i < length; i++) {
             for (int j = 0; j < length; j++) {
                 if (b.tile(i ,j) != null && b.tile(i, j).value() == MAX_PIECE) {
-                    return true;
+                        return true;
+                    }
                 }
             }
-        }
         return false;
     }
 
@@ -305,7 +378,7 @@ public class Model extends Observable {
 
 
     @Override
-    /** Returns the model as a string, used for debugging. */
+     /** Returns the model as a string, used for debugging. */
     public String toString() {
         Formatter out = new Formatter();
         out.format("%n[%n");
